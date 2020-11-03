@@ -1,4 +1,5 @@
 pub mod iface;
+pub(crate) mod internal;
 
 #[cfg(test)]
 mod tests {
