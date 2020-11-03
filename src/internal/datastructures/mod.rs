@@ -5,7 +5,7 @@ use crate::iface::{ActionStatter, Actioner, Stater};
 struct QMap<S, A, AS>
 where
     A: Actioner,
-    S: Stater,
+    S: Stater<A>,
     AS: ActionStatter + Copy,
 {
     #[allow(dead_code)]
@@ -17,11 +17,11 @@ where
 impl<S, A, AS> QMap<S, A, AS>
 where
     A: Actioner,
-    S: Stater + Copy,
+    S: Stater<A> + Copy,
     AS: ActionStatter + Copy,
 {
     #[allow(dead_code)]
-    fn new_q_map() -> QMap<S, A, AS> {
+    fn new() -> QMap<S, A, AS> {
         QMap {
             data: HashMap::new(),
             _actioner: marker::PhantomData {},
@@ -48,3 +48,38 @@ where
         self.data[state.id().as_str()].clone()
     }
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+//     use crate::iface::{Actioner, LearnerError, Stater};
+//     use mockall::predicate::*;
+//     use mockall::*;
+
+//     mock! {
+//         MActioner {}
+//         trait Actioner {
+//             fn id(self) -> String;
+//         }
+//     }
+
+//     mock! {
+//         MStater<A, 'a>{}
+//         trait Stater<A>{
+//             fn possible_actions(self) -> Vec<A>;
+//             fn action_is_compatible(self, actioner: A) -> bool;
+//             fn get_action(self, action_name: String) -> Result<A, LearnerError>;
+//             fn id(self) -> String;
+//             fn apply(self, actioner: A) -> Result<(), LearnerError>;
+//         }
+//     }
+
+//     fn get_stats_no_data() {
+//         // let mut mock_stater = MockStater::new();
+//         // let mut mock_actioner = MockActioner::new();
+
+//         // let qmap = QMap::new();
+//         // let result = qmap.get_stats(state, action);
+//         // assert_eq!(None, result);
+//     }
+// }
