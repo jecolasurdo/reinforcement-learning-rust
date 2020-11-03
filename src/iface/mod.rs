@@ -33,7 +33,7 @@ pub trait Actioner {
     /// Returns a string representation of the given action.
     /// Implementors shoud take care to ensure this is a consistent hash for a
     /// given state.
-    fn id(self) -> String;
+    fn id(&self) -> String;
 }
 
 /// Represents something that is capabile of recommending actions, applying

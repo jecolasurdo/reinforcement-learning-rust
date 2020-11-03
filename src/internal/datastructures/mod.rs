@@ -60,6 +60,8 @@ mod tests {
     fn get_stats_no_data() {
         // let mut mock_stater = MockStater::new();
         let mut mock_actioner = MockActioner::new();
+        mock_actioner.expect_id().times(1).return_const("test");
+        assert_eq!("test", mock_actioner.id());
 
         // let qmap = QMap::new();
         // let result = qmap.get_stats(state, action);
