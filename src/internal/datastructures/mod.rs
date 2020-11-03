@@ -49,37 +49,20 @@ where
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//     use crate::iface::{Actioner, LearnerError, Stater};
-//     use mockall::predicate::*;
-//     use mockall::*;
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::iface::*;
+    use mockall::predicate::*;
+    use mockall::*;
 
-//     mock! {
-//         MActioner {}
-//         trait Actioner {
-//             fn id(self) -> String;
-//         }
-//     }
+    #[test]
+    fn get_stats_no_data() {
+        // let mut mock_stater = MockStater::new();
+        let mut mock_actioner = MockActioner::new();
 
-//     mock! {
-//         MStater<A, 'a>{}
-//         trait Stater<A>{
-//             fn possible_actions(self) -> Vec<A>;
-//             fn action_is_compatible(self, actioner: A) -> bool;
-//             fn get_action(self, action_name: String) -> Result<A, LearnerError>;
-//             fn id(self) -> String;
-//             fn apply(self, actioner: A) -> Result<(), LearnerError>;
-//         }
-//     }
-
-//     fn get_stats_no_data() {
-//         // let mut mock_stater = MockStater::new();
-//         // let mut mock_actioner = MockActioner::new();
-
-//         // let qmap = QMap::new();
-//         // let result = qmap.get_stats(state, action);
-//         // assert_eq!(None, result);
-//     }
-// }
+        // let qmap = QMap::new();
+        // let result = qmap.get_stats(state, action);
+        // assert_eq!(None, result);
+    }
+}

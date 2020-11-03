@@ -1,3 +1,5 @@
+use mockall::automock;
+
 #[derive(Debug, Clone)]
 pub struct LearnerError;
 
@@ -26,6 +28,7 @@ where
 }
 
 /// Represents an action that can be applied to the model's current state.
+#[automock]
 pub trait Actioner {
     /// Returns a string representation of the given action.
     /// Implementors shoud take care to ensure this is a consistent hash for a
