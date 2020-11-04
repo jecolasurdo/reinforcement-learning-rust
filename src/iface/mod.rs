@@ -59,6 +59,7 @@ where
 }
 
 /// Represents the stats that can be associated with an action.
+#[automock]
 pub trait ActionStatter {
     fn calls(&mut self) -> i64;
     fn set_calls(&mut self, n: i64);

@@ -49,23 +49,31 @@ where
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//     use crate::iface::*;
-//     use mockall::predicate::*;
-//     use mockall::*;
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::iface::*;
+    use mockall::predicate::*;
+    use mockall::*;
+    use std::fmt::{self, Debug};
 
-//     #[test]
-//     fn get_stats_no_data() {
-//         let mut state = MockStater::new();
-//         state.expect_id().times(1).return_const("A");
+    #[test]
+    /// If the qmap does not contain any entries for a state, the state
+    /// should be added with an empty hashmap value.
+    fn get_actions_for_state() {
+        let mut action: MockActioner = MockActioner::new();
+        action.expect_id().times(0).return_const("X");
 
-//         let mut action = MockActioner::new();
-//         action.expect_id().times(1).return_const("X");
+        let mut state: MockStater<MockActioner> = MockStater::new();
+        state.expect_id().times(..).return_const("A");
 
-//         let qmap = QMap::new();
-//         let result = qmap.get_stats(state, action);
-//         assert_eq!(None, result);
-//     }
-// }
+        let mut qmap: QMap<MockStater<MockActioner>, MockActioner, MockActionStatter> = QMap::new();
+        let result = qmap.get_actions_for_state(&mut state);
+        assert_eq!(
+            result.keys().nth(0).unwrap(),
+            "A",
+            "key must equal the state's id"
+        );
+        assert_eq!(result.values().len(), 0, "state map must be empty");
+    }
+}
