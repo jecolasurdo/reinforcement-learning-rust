@@ -14,13 +14,13 @@ pub struct ActionStats {
 
 impl ActionStatter for ActionStats {
     /// Returns the number of times this action has been called.
-    fn calls(&self) -> f64 {
-        self.calls
+    fn calls(&self) -> i64 {
+        self.call_count
     }
 
     /// Sets the number of times this action has been called.
     fn set_calls(&mut self, n: i64) {
-        self.calls = n
+        self.call_count = n
     }
 
     /// Returns the raw q-value for this action.
