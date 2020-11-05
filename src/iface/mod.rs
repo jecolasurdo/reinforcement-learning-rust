@@ -1,7 +1,5 @@
+use crate::errors::LearnerError;
 use mockall::automock;
-
-#[derive(Debug, Copy, Clone)]
-pub struct LearnerError;
 
 /// Represents the current state of the model.
 #[automock]
@@ -55,7 +53,7 @@ where
     fn transition(&self, stater: S, actioner: A) -> Result<(), LearnerError>;
 
     // Updates the model for a given state and action using the provided reward.
-    fn learn(&self, previous_state: S, action_taken: A, current_state: S, reward: f64);
+    fn learn(&mut self, previous_state: S, action_taken: A, current_state: S, reward: f64);
 }
 
 /// Represents the stats that can be associated with an action.
