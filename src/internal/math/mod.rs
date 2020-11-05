@@ -1,6 +1,7 @@
 /// Bellman applies a Bellman operation to recommend a new q-value for a state
 /// based on the supplied paramters.
 /// See https://en.wikipedia.org/wiki/Bellman_equation
+#[allow(dead_code)]
 fn bellman(
     old_value: f64,
     learning_rate: f64,
@@ -23,11 +24,13 @@ fn bellman(
 ///   v = An observed parameter value.
 ///   see https://en.wikipedia.org/wiki/Bayesian_average
 ///   see https://fulmicoton.com/posts/bayesian_rating/
+#[allow(dead_code)]
 fn bayesian_average(c: f64, n: f64, m: f64, v: f64) -> f64 {
     safe_divide(c * m + n * v, c + n)
 }
 
 /// Returns 0 if the divisor is 0, avoiding div/0 panics.
+#[allow(dead_code)]
 fn safe_divide(dividend: f64, divisor: f64) -> f64 {
     if divisor == 0.0 {
         return 0.0;
