@@ -1,6 +1,7 @@
 use crate::errors::LearnerError;
 use crate::iface::{ActionStatter, Actioner, Agenter, Stater};
 use crate::internal::datastructures::QMap;
+use rand::Rng;
 use std::marker;
 
 pub struct BayesianAgent<S, A: 'static, AS>
@@ -9,7 +10,7 @@ where
     S: Stater<A>,
     AS: ActionStatter,
 {
-    // pub tie_breaker: &|i64| -> i64,
+    pub tie_breaker: Box<dyn Fn(i64) -> i64>,
     qmap: Box<QMap<S, A, AS>>,
     learning_rate: f64,
     discount_factor: f64,
@@ -29,6 +30,7 @@ where
     AS: ActionStatter,
 {
     BayesianAgent {
+        tie_breaker: Box::new(|n: i64| -> i64 { rand::thread_rng().gen_range(0, n) }),
         qmap: Box::new(QMap::new()),
         learning_rate,
         discount_factor,
