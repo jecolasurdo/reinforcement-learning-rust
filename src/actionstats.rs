@@ -25,9 +25,8 @@ impl ActionStatter for ActionStats {
     }
 
     /// Sets the number of times this action has been called.
-    fn set_calls(&self, n: i64) -> Self {
-        self.clone().call_count = n;
-        *self
+    fn set_calls(&mut self, n: i64) {
+        self.call_count = n
     }
 
     /// Returns the raw q-value for this action.
@@ -36,9 +35,8 @@ impl ActionStatter for ActionStats {
     }
 
     /// Sets the raw q-value for this action.
-    fn set_q_value_raw(&self, q: f64) -> Self {
-        self.clone().q_raw = q;
-        *self
+    fn set_q_value_raw(&mut self, q: f64) {
+        self.q_raw = q
     }
 
     /// Returns the weighted q-value for this action.
@@ -47,8 +45,7 @@ impl ActionStatter for ActionStats {
     }
 
     /// Sets the weighted q-value for this action.
-    fn set_q_value_weighted(&self, q: f64) -> Self {
-        self.clone().q_weighted = q;
-        *self
+    fn set_q_value_weighted(&mut self, q: f64) {
+        self.q_weighted = q
     }
 }

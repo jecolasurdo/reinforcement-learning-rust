@@ -25,13 +25,13 @@ pub(crate) fn bellman(
 ///   see https://en.wikipedia.org/wiki/Bayesian_average
 ///   see https://fulmicoton.com/posts/bayesian_rating/
 #[allow(dead_code)]
-fn bayesian_average(c: f64, n: f64, m: f64, v: f64) -> f64 {
+pub(crate) fn bayesian_average(c: f64, n: f64, m: f64, v: f64) -> f64 {
     safe_divide(c * m + n * v, c + n)
 }
 
 /// Returns 0 if the divisor is 0, avoiding div/0 panics.
 #[allow(dead_code)]
-fn safe_divide(dividend: f64, divisor: f64) -> f64 {
+pub(crate) fn safe_divide(dividend: f64, divisor: f64) -> f64 {
     if divisor == 0.0 {
         return 0.0;
     }

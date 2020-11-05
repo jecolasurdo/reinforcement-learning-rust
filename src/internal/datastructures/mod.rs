@@ -42,7 +42,7 @@ where
     }
 
     #[allow(dead_code)]
-    fn get_actions_for_state(&mut self, state: &mut S) -> &mut HashMap<String, AS> {
+    pub(crate) fn get_actions_for_state(&mut self, state: &mut S) -> &mut HashMap<String, AS> {
         self.data.entry(state.id()).or_insert(HashMap::new())
     }
 }

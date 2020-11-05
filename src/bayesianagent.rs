@@ -70,9 +70,8 @@ where
             self.discount_factor,
             self.get_best_value(current_state),
         );
-        stats = stats
-            .set_calls(stats.calls() + 1)
-            .set_q_value_raw(new_value);
+        stats.set_calls(stats.calls() + 1);
+        stats.set_q_value_raw(new_value);
         self.qmap
             .update_stats(&mut previous_state, action_taken, stats);
         self.apply_action_weights(&mut previous_state);
@@ -94,7 +93,29 @@ where
     AS: ActionStatter,
 {
     fn apply_action_weights(&mut self, state: &mut S) {
-        unimplemented!()
+        let mut raw_value_sum = 0.0;
+        let mut existing_action_count = 0;
+        for action in state.possible_actions() {
+            match self.qmap.get_stats(state, action) {
+                Some(s) => {
+                    raw_value_sum += s.q_value_raw();
+                    existing_action_count += 1;
+                }
+                None => self.qmap.update_stats(state, action, AS::new()),
+            }
+        }
+
+        let mean = math::safe_divide(raw_value_sum, existing_action_count as f64);
+        let action_stats = self.qmap.get_actions_for_state(state);
+        for (_, stats) in action_stats {
+            let weighted_mean = math::bayesian_average(
+                self.priming_threshold as f64,
+                stats.calls() as f64,
+                mean,
+                stats.q_value_raw(),
+            );
+            stats.set_q_value_weighted(weighted_mean);
+        }
     }
 
     fn get_best_value(&mut self, state: &mut S) -> f64 {
