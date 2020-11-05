@@ -61,10 +61,10 @@ where
 /// Represents the stats that can be associated with an action.
 #[automock]
 pub trait ActionStatter {
-    fn calls(&mut self) -> i64;
+    fn calls(&self) -> i64;
     fn set_calls(&mut self, n: i64);
-    fn q_value_raw(&mut self) -> f64;
+    fn q_value_raw(&self) -> f64;
     fn set_q_value_raw(&mut self, q: f64);
-    fn q_value_weighted(self) -> f64;
+    fn q_value_weighted(&self) -> f64;
     fn set_q_value_weighted(&mut self, q: f64);
 }
