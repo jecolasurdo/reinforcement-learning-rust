@@ -70,8 +70,9 @@ where
             self.discount_factor,
             self.get_best_value(current_state),
         );
-        stats.set_calls(stats.calls() + 1);
-        stats.set_q_value_raw(new_value);
+        stats = stats
+            .set_calls(stats.calls() + 1)
+            .set_q_value_raw(new_value);
         self.qmap
             .update_stats(&mut previous_state, action_taken, stats);
         self.apply_action_weights(&mut previous_state);
