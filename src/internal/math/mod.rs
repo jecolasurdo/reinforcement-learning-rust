@@ -2,7 +2,7 @@
 /// based on the supplied paramters.
 /// See https://en.wikipedia.org/wiki/Bellman_equation
 #[allow(dead_code)]
-fn bellman(
+pub(crate) fn bellman(
     old_value: f64,
     learning_rate: f64,
     reward: f64,

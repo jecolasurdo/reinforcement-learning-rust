@@ -53,12 +53,19 @@ where
     fn transition(&self, stater: S, actioner: A) -> Result<(), LearnerError>;
 
     // Updates the model for a given state and action using the provided reward.
-    fn learn(&mut self, previous_state: S, action_taken: A, current_state: S, reward: f64);
+    fn learn(
+        &mut self,
+        previous_state: Option<S>,
+        action_taken: &mut A,
+        current_state: &mut S,
+        reward: f64,
+    );
 }
 
 /// Represents the stats that can be associated with an action.
 #[automock]
 pub trait ActionStatter {
+    fn new() -> Self;
     fn calls(&self) -> i64;
     fn set_calls(&mut self, n: i64);
     fn q_value_raw(&self) -> f64;

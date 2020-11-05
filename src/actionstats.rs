@@ -1,6 +1,7 @@
 use crate::iface::ActionStatter;
 
 /// Contains statistics about an action that has been applied to some state.
+#[derive(Default, Copy, Clone)]
 pub struct ActionStats {
     call_count: i64,
 
@@ -13,6 +14,11 @@ pub struct ActionStats {
 }
 
 impl ActionStatter for ActionStats {
+    /// Instantiates a new ActionStats object.
+    fn new() -> Self {
+        ActionStats::default()
+    }
+
     /// Returns the number of times this action has been called.
     fn calls(&self) -> i64 {
         self.call_count
