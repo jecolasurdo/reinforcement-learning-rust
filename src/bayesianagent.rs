@@ -119,6 +119,13 @@ where
     }
 
     fn get_best_value(&mut self, state: &mut S) -> f64 {
-        unimplemented!()
+        let mut best_q_value = 0.0;
+        for (_, stat) in self.qmap.get_actions_for_state(state) {
+            let q = stat.q_value_weighted();
+            if q > best_q_value {
+                best_q_value = q;
+            }
+        }
+        best_q_value
     }
 }
