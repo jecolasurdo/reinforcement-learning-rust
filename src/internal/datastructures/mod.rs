@@ -29,16 +29,19 @@ where
         }
     }
 
+    #[allow(dead_code)]
     fn get_stats(&mut self, state: &mut S, action: &mut A) -> Option<&AS> {
         let actions = self.get_actions_for_state(state);
         actions.get(action.id().as_str())
     }
 
+    #[allow(dead_code)]
     fn update_stats(&mut self, state: &mut S, action: &mut A, stats: AS) {
         self.get_actions_for_state(state)
             .insert(action.id().to_owned(), stats);
     }
 
+    #[allow(dead_code)]
     fn get_actions_for_state(&mut self, state: &mut S) -> &mut HashMap<String, AS> {
         self.data.entry(state.id()).or_insert(HashMap::new())
     }
@@ -76,5 +79,22 @@ mod tests {
         let result = qmap.get_stats(&mut state, &mut action);
 
         assert!(result.is_none(), "result should be None");
+    }
+
+    #[test]
+    fn get_stats_state_has_data() {
+        let mut action: MockActioner = MockActioner::new();
+        action.expect_id().times(..).return_const("X");
+
+        let mut state: MockStater<MockActioner> = MockStater::new();
+        state.expect_id().times(..).return_const("A");
+
+        let stats: MockActionStatter = MockActionStatter::new();
+
+        let mut qmap: QMap<MockStater<MockActioner>, MockActioner, MockActionStatter> = QMap::new();
+        qmap.update_stats(&mut state, &mut action, stats);
+        let result = qmap.get_stats(&mut state, &mut action);
+
+        assert!(result.is_some(), "result should be Some");
     }
 }
