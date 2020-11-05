@@ -1,12 +1,48 @@
 use crate::errors::LearnerError;
-use crate::iface::{Actioner, Agenter, Stater};
+use crate::iface::{ActionStatter, Actioner, Agenter, Stater};
+use crate::internal::datastructures::QMap;
+use std::marker;
 
-pub struct BayesianAgent {}
+pub struct BayesianAgent<S, A: 'static, AS>
+where
+    A: Actioner,
+    S: Stater<A>,
+    AS: ActionStatter,
+{
+    // pub tie_breaker: &|i64| -> i64,
+    qmap: Box<QMap<S, A, AS>>,
+    learning_rate: f64,
+    discount_factor: f64,
+    priming_threshold: i64,
+    _actioner: marker::PhantomData<A>,
+    _stater: marker::PhantomData<S>,
+}
 
-impl<S, A: 'static> Agenter<S, A> for BayesianAgent
+pub fn new<S, A, AS>(
+    priming_threshold: i64,
+    learning_rate: f64,
+    discount_factor: f64,
+) -> BayesianAgent<S, A, AS>
 where
     S: Stater<A>,
     A: Actioner,
+    AS: ActionStatter,
+{
+    BayesianAgent {
+        qmap: Box::new(QMap::new()),
+        learning_rate,
+        discount_factor,
+        priming_threshold,
+        _actioner: marker::PhantomData {},
+        _stater: marker::PhantomData {},
+    }
+}
+
+impl<S, A: 'static, AS> Agenter<S, A> for BayesianAgent<S, A, AS>
+where
+    S: Stater<A>,
+    A: Actioner,
+    AS: ActionStatter,
 {
     fn recommend_action(&self, stater: S) -> Result<A, LearnerError> {
         unimplemented!();

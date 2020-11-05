@@ -2,7 +2,7 @@ use std::{collections::HashMap, marker};
 
 use crate::iface::{ActionStatter, Actioner, Stater};
 
-struct QMap<S, A: 'static, AS>
+pub(crate) struct QMap<S, A: 'static, AS>
 where
     A: Actioner,
     S: Stater<A>,
@@ -21,7 +21,7 @@ where
     AS: ActionStatter,
 {
     #[allow(dead_code)]
-    fn new() -> QMap<S, A, AS> {
+    pub(crate) fn new() -> QMap<S, A, AS> {
         QMap {
             data: HashMap::new(),
             _actioner: marker::PhantomData {},
@@ -30,13 +30,13 @@ where
     }
 
     #[allow(dead_code)]
-    fn get_stats(&mut self, state: &mut S, action: &mut A) -> Option<&AS> {
+    pub(crate) fn get_stats(&mut self, state: &mut S, action: &mut A) -> Option<&AS> {
         let actions = self.get_actions_for_state(state);
         actions.get(action.id().as_str())
     }
 
     #[allow(dead_code)]
-    fn update_stats(&mut self, state: &mut S, action: &mut A, stats: AS) {
+    pub(crate) fn update_stats(&mut self, state: &mut S, action: &mut A, stats: AS) {
         self.get_actions_for_state(state)
             .insert(action.id().to_owned(), stats);
     }
