@@ -132,56 +132,60 @@ where
 
 #[cfg(test)]
 mod tests {
-    // use super::*;
-    // use crate::iface::*;
+    use super::*;
+    use crate::{actionstats::ActionStats, iface::*};
 
-    // #[test]
-    // fn test_learn() {
-    //     let mut action1 = MockActioner::new();
-    //     action1.expect_id().times(..).return_const("X");
+    #[test]
+    fn test_learn() {
+        // Encapulating mock state in a function so the mocks can be created
+        // and used in multiple places (since the mocks aren't Copy)
+        let create_mock_actions = || -> Vec<MockActioner> {
+            let mut action1 = MockActioner::new();
+            action1.expect_id().times(..).return_const("X");
 
-    //     let mut action2 = MockActioner::new();
-    //     action2.expect_id().times(..).return_const("Y");
+            let mut action2 = MockActioner::new();
+            action2.expect_id().times(..).return_const("Y");
 
-    //     let mut action3 = MockActioner::new();
-    //     action3.expect_id().times(..).return_const("Z");
+            let mut action3 = MockActioner::new();
+            action3.expect_id().times(..).return_const("Z");
 
-    //     let possible_actions = vec![&mut action1, &mut action2, &mut action3];
+            vec![action1, action2, action3]
+        };
 
-    //     let mut previous_state: MockStater<MockActioner> = MockStater::new();
-    //     previous_state.expect_id().times(..).return_const("A");
-    //     previous_state
-    //         .expect_possible_actions()
-    //         .times(..)
-    //         .return_const(&possible_actions);
+        // Encapulating mock state in a function so the mocks can be created
+        // and used in multiple places (since the mocks aren't Copy)
+        let mock_previous_state = || -> MockStater<MockActioner> {
+            let mut previous_state = MockStater::new();
+            previous_state.expect_id().times(..).return_const("A");
+            previous_state
+                .expect_possible_actions()
+                .times(..)
+                .returning(create_mock_actions);
+            return previous_state;
+        };
 
-    //     let mut current_state: MockStater<MockActioner> = MockStater::new();
-    //     current_state.expect_id().times(..).return_const("B");
-    //     current_state
-    //         .expect_possible_actions()
-    //         .times(..)
-    //         .returning(|| possible_actions);
+        let mut current_state: MockStater<MockActioner> = MockStater::new();
+        current_state.expect_id().times(..).return_const("B");
+        current_state
+            .expect_possible_actions()
+            .times(..)
+            .returning(create_mock_actions);
 
-    //     impl Clone for MockActioner {
-    //         fn clone(&self) -> Self {
-    //             todo!()
-    //         }
-    //     }
-
-    //     let mut ba: BayesianAgent<MockStater<MockActioner>, MockActioner, MockActionStatter> =
-    //         BayesianAgent::new(10, 1.0, 0.0);
-    //     let reward = 1.0;
-    //     ba.learn(
-    //         Some(previous_state),
-    //         &mut action1,
-    //         &mut current_state,
-    //         reward,
-    //     );
-    //     ba.learn(
-    //         Some(previous_state),
-    //         &mut action2,
-    //         &mut current_state,
-    //         reward,
-    //     );
-    // }
+        let mut ba: BayesianAgent<MockStater<MockActioner>, MockActioner, ActionStats> =
+            BayesianAgent::new(10, 1.0, 0.0);
+        let reward = 1.0;
+        let mut mock_actions = create_mock_actions();
+        ba.learn(
+            Some(mock_previous_state()),
+            &mut mock_actions[0], // Action X
+            &mut current_state,
+            reward,
+        );
+        ba.learn(
+            Some(mock_previous_state()),
+            &mut mock_actions[1], // Action Y
+            &mut current_state,
+            reward,
+        );
+    }
 }
