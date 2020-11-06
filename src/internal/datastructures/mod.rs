@@ -9,7 +9,7 @@ where
     AS: ActionStatter,
 {
     #[allow(dead_code)]
-    data: HashMap<String, HashMap<String, AS>>,
+    pub(crate) data: HashMap<String, HashMap<String, AS>>,
     _actioner: marker::PhantomData<A>,
     _stater: marker::PhantomData<S>,
 }

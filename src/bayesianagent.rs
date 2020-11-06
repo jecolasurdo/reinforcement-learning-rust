@@ -2,6 +2,7 @@ use crate::iface::{ActionStatter, Actioner, Agenter, Stater};
 use crate::internal::datastructures::QMap;
 use crate::{errors::LearnerError, internal::math};
 use rand::Rng;
+use std::collections::HashMap;
 use std::marker;
 
 pub struct BayesianAgent<S, A: 'static, AS>
@@ -17,6 +18,13 @@ where
     priming_threshold: i64,
     _actioner: marker::PhantomData<A>,
     _stater: marker::PhantomData<S>,
+}
+
+pub struct AgentContext<AS: ActionStatter> {
+    pub learning_rate: f64,
+    pub discount_factor: f64,
+    pub priming_threshold: i64,
+    pub q_values: HashMap<String, HashMap<String, AS>>,
 }
 
 impl<S, A: 'static, AS> Agenter<S, A> for BayesianAgent<S, A, AS>
@@ -91,6 +99,15 @@ where
             _stater: marker::PhantomData {},
         }
     }
+
+    // pub fn get_agent_context(&self) -> AgentContext<AS> {
+    //     AgentContext {
+    //         learning_rate: self.learning_rate,
+    //         discount_factor: self.discount_factor,
+    //         priming_threshold: self.priming_threshold,
+    //         q_values: self.qmap.data,
+    //     }
+    // }
 
     fn apply_action_weights(&mut self, state: &mut S) {
         let mut raw_value_sum = 0.0;
