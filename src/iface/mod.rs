@@ -8,7 +8,7 @@ where
     A: Actioner,
 {
     /// Provides a slice of Actions that are applicable to this state.
-    fn possible_actions(&self) -> Vec<&'static mut A>;
+    fn possible_actions(&self) -> Vec<A>;
 
     /// Checks whether or not the supplied action is compatible with this state.
     fn action_is_compatible(&self, actioner: A) -> bool;
@@ -67,6 +67,7 @@ where
 pub trait ActionStatter {
     fn new() -> Self;
     fn calls(&self) -> i64;
+    fn clone(&self) -> Self;
     fn set_calls(&mut self, n: i64);
     fn q_value_raw(&self) -> f64;
     fn set_q_value_raw(&mut self, q: f64);

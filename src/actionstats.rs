@@ -24,6 +24,15 @@ impl ActionStatter for ActionStats {
         self.call_count
     }
 
+    /// Creates a new ActionStats with the same properties as the original.
+    fn clone(&self) -> Self {
+        Self {
+            call_count: self.call_count,
+            q_raw: self.q_raw,
+            q_weighted: self.q_weighted,
+        }
+    }
+
     /// Sets the number of times this action has been called.
     fn set_calls(&mut self, n: i64) {
         self.call_count = n
