@@ -20,6 +20,7 @@ where
     _stater: marker::PhantomData<S>,
 }
 
+#[derive(Debug, PartialEq)]
 pub struct AgentContext<AS: ActionStatter> {
     pub learning_rate: f64,
     pub discount_factor: f64,
@@ -46,7 +47,7 @@ where
         let mut previous_state = previous_state.unwrap();
         let mut stats = match self.qmap.get_stats(&mut previous_state, action_taken) {
             Some(s) => s.clone(),
-            None => AS::new(),
+            None => AS::default(),
         };
 
         self.apply_action_weights(current_state);
@@ -100,14 +101,14 @@ where
         }
     }
 
-    // pub fn get_agent_context(&self) -> AgentContext<AS> {
-    //     AgentContext {
-    //         learning_rate: self.learning_rate,
-    //         discount_factor: self.discount_factor,
-    //         priming_threshold: self.priming_threshold,
-    //         q_values: self.qmap.data,
-    //     }
-    // }
+    pub fn get_agent_context(&self) -> AgentContext<AS> {
+        AgentContext {
+            learning_rate: self.learning_rate,
+            discount_factor: self.discount_factor,
+            priming_threshold: self.priming_threshold,
+            q_values: self.qmap.data.clone(),
+        }
+    }
 
     fn apply_action_weights(&mut self, state: &mut S) {
         let mut raw_value_sum = 0.0;
@@ -118,7 +119,7 @@ where
                     raw_value_sum += s.q_value_raw();
                     existing_action_count += 1;
                 }
-                None => self.qmap.update_stats(state, &mut action, AS::new()),
+                None => self.qmap.update_stats(state, &mut action, AS::default()),
             }
         }
 
@@ -151,9 +152,10 @@ where
 mod tests {
     use super::*;
     use crate::{actionstats::ActionStats, iface::*};
+    use maplit::hashmap;
 
     #[test]
-    fn test_learn() {
+    fn learn() {
         // Encapulating mock state in a function so the mocks can be created
         // and used in multiple places (since the mocks aren't Copy)
         let create_mock_actions = || -> Vec<MockActioner> {
@@ -204,5 +206,26 @@ mod tests {
             &mut current_state,
             reward,
         );
+
+        let actual = ba.get_agent_context();
+
+        let expected = AgentContext {
+            learning_rate: 1.0,
+            discount_factor: 0.0,
+            priming_threshold: 10,
+            q_values: hashmap! {
+                "A".to_string() => hashmap! {
+                    "X".to_string() => ActionStats {call_count: 1, q_raw: 1.0, q_weighted: 0.6969696969696969},
+                    "Y".to_string() => ActionStats {call_count: 1, q_raw: 1.0, q_weighted: 0.6969696969696969},
+                    "Z".to_string() => ActionStats {call_count: 0, q_raw: 0.0, q_weighted: 0.66666666666666666},
+                },
+                "B".to_string() => hashmap! {
+                    "X".to_string() => ActionStats {call_count: 0, q_raw: 0.0, q_weighted: 0.0},
+                    "Y".to_string() => ActionStats {call_count: 0, q_raw: 0.0, q_weighted: 0.0},
+                    "Z".to_string() => ActionStats {call_count: 0, q_raw: 0.0, q_weighted: 0.0},
+                },
+            },
+        };
+        assert_eq!(expected, actual);
     }
 }

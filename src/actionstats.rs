@@ -1,36 +1,22 @@
 use crate::iface::ActionStatter;
 
 /// Contains statistics about an action that has been applied to some state.
-#[derive(Default, Copy, Clone)]
+#[derive(PartialEq, Debug, Default, Copy, Clone)]
 pub struct ActionStats {
-    call_count: i64,
+    pub(crate) call_count: i64,
 
     /// This is the raw q-value associated with this action.
-    q_raw: f64,
+    pub(crate) q_raw: f64,
 
     /// This is the q-value for this action that has been weighted acroding to
     /// the agent's weighting rules.
-    q_weighted: f64,
+    pub(crate) q_weighted: f64,
 }
 
 impl ActionStatter for ActionStats {
-    /// Instantiates a new ActionStats object.
-    fn new() -> Self {
-        ActionStats::default()
-    }
-
     /// Returns the number of times this action has been called.
     fn calls(&self) -> i64 {
         self.call_count
-    }
-
-    /// Creates a new ActionStats with the same properties as the original.
-    fn clone(&self) -> Self {
-        Self {
-            call_count: self.call_count,
-            q_raw: self.q_raw,
-            q_weighted: self.q_weighted,
-        }
     }
 
     /// Sets the number of times this action has been called.

@@ -9,3 +9,4 @@ edition = "2018"
 [dependencies]
 mockall = "0.8.3"
 rand = "0.7.3"
+maplit = "1.0.2"

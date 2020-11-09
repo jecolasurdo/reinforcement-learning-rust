@@ -63,11 +63,8 @@ where
 }
 
 /// Represents the stats that can be associated with an action.
-#[automock]
-pub trait ActionStatter {
-    fn new() -> Self;
+pub trait ActionStatter: Clone + Default {
     fn calls(&self) -> i64;
-    fn clone(&self) -> Self;
     fn set_calls(&mut self, n: i64);
     fn q_value_raw(&self) -> f64;
     fn set_q_value_raw(&mut self, q: f64);
