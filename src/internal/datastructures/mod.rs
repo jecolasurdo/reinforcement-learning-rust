@@ -2,37 +2,27 @@ use std::{collections::HashMap, marker};
 
 use crate::iface::{ActionStatter, Actioner, Stater};
 
-pub(crate) struct QMap<S, A: 'static, AS>
+#[derive(Clone)]
+pub(crate) struct QMap<'a, S, A, AS>
 where
-    A: Actioner,
-    S: Stater<A>,
+    A: Actioner<'a>,
+    S: Stater<'a, A>,
     AS: ActionStatter,
 {
     #[allow(dead_code)]
-    pub(crate) data: HashMap<String, HashMap<String, AS>>,
+    pub(crate) data: HashMap<&'a str, HashMap<&'a str, Box<AS>>>,
     _actioner: marker::PhantomData<A>,
     _stater: marker::PhantomData<S>,
 }
 
-impl<S, A: 'static, AS> Clone for QMap<S, A, AS>
+impl<'a, S, A, AS> QMap<'a, S, A, AS>
 where
-    A: Actioner,
-    S: Stater<A>,
-    AS: ActionStatter,
-{
-    fn clone(&self) -> Self {
-        unimplemented!()
-    }
-}
-
-impl<S, A: 'static, AS> QMap<S, A, AS>
-where
-    A: Actioner,
-    S: Stater<A>,
+    A: Actioner<'a>,
+    S: Stater<'a, A>,
     AS: ActionStatter,
 {
     #[allow(dead_code)]
-    pub(crate) fn new() -> QMap<S, A, AS> {
+    pub(crate) fn new() -> QMap<'a, S, A, AS> {
         QMap {
             data: HashMap::new(),
             _actioner: marker::PhantomData {},
@@ -41,19 +31,21 @@ where
     }
 
     #[allow(dead_code)]
-    pub(crate) fn get_stats(&mut self, state: &mut S, action: &mut A) -> Option<&AS> {
+    pub(crate) fn get_stats(&mut self, state: &'a S, action: &'a A) -> Option<Box<AS>> {
         let actions = self.get_actions_for_state(state);
-        actions.get(action.id().as_str())
+        if let Some(stat) = actions.get(action.id()) {
+            return Some(Box::new(*stat.clone()));
+        }
+        None
     }
 
     #[allow(dead_code)]
-    pub(crate) fn update_stats(&mut self, state: &mut S, action: &mut A, stats: AS) {
-        self.get_actions_for_state(state)
-            .insert(action.id().to_owned(), stats);
+    pub(crate) fn update_stats(&mut self, state: &'a S, action: &'a A, stats: Box<AS>) {
+        self.get_actions_for_state(state).insert(action.id(), stats);
     }
 
     #[allow(dead_code)]
-    pub(crate) fn get_actions_for_state(&mut self, state: &mut S) -> &mut HashMap<String, AS> {
+    pub(crate) fn get_actions_for_state(&mut self, state: &'a S) -> &mut HashMap<&'a str, Box<AS>> {
         self.data.entry(state.id()).or_insert(HashMap::new())
     }
 }
