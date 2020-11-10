@@ -150,84 +150,59 @@ where
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//     use crate::{actionstats::ActionStats, iface::*};
-//     use maplit::hashmap;
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::actionstats::ActionStats;
+    use crate::mocks::*;
+    use maplit::hashmap;
 
-//     #[test]
-//     fn learn() {
-//         // Encapulating mock state in a function so the mocks can be created
-//         // and used in multiple places (since the mocks aren't Copy)
-//         let create_mock_actions = || -> Vec<MockActioner> {
-//             let mut action1 = MockActioner::new();
-//             action1.expect_id().times(..).return_const("X");
+    #[test]
+    fn learn() {
+        let action_x = MockActioner { return_id: "X" };
+        let action_y = MockActioner { return_id: "Y" };
+        let action_z = MockActioner { return_id: "Z" };
+        let mock_actions = || -> Vec<&MockActioner> { vec![&action_x, &action_y, &action_z] };
 
-//             let mut action2 = MockActioner::new();
-//             action2.expect_id().times(..).return_const("Y");
+        let previous_state = MockStater {
+            return_id: "A",
+            return_possible_actions: mock_actions(),
+            return_action_is_compatible: &|_| -> bool { unimplemented!() },
+            return_apply: &|_| -> Result<(), LearnerError> { unimplemented!() },
+        };
 
-//             let mut action3 = MockActioner::new();
-//             action3.expect_id().times(..).return_const("Z");
+        let current_state = MockStater {
+            return_id: "B",
+            return_possible_actions: mock_actions(),
+            return_action_is_compatible: &|_| -> bool { unimplemented!() },
+            return_apply: &|_| -> Result<(), LearnerError> { unimplemented!() },
+        };
 
-//             vec![action1, action2, action3]
-//         };
+        let mut ba: BayesianAgent<MockStater<MockActioner>, MockActioner, ActionStats> =
+            BayesianAgent::new(10, 1.0, 0.0);
+        let reward = 1.0;
+        ba.learn(Some(&previous_state), &action_x, &current_state, reward);
+        ba.learn(Some(&previous_state), &action_y, &current_state, reward);
 
-//         // Encapulating mock state in a function so the mocks can be created
-//         // and used in multiple places (since the mocks aren't Copy)
-//         let mock_previous_state = || -> MockStater<MockActioner> {
-//             let mut previous_state = MockStater::new();
-//             previous_state.expect_id().times(..).return_const("A");
-//             previous_state
-//                 .expect_possible_actions()
-//                 .times(..)
-//                 .returning(create_mock_actions);
-//             return previous_state;
-//         };
+        let actual = ba.get_agent_context();
 
-//         let mut current_state: MockStater<MockActioner> = MockStater::new();
-//         current_state.expect_id().times(..).return_const("B");
-//         current_state
-//             .expect_possible_actions()
-//             .times(..)
-//             .returning(create_mock_actions);
-
-//         let mut ba: BayesianAgent<MockStater<MockActioner>, MockActioner, ActionStats> =
-//             BayesianAgent::new(10, 1.0, 0.0);
-//         let reward = 1.0;
-//         let mut mock_actions = create_mock_actions();
-//         ba.learn(
-//             Some(mock_previous_state()),
-//             &mut mock_actions[0], // Action X
-//             &mut current_state,
-//             reward,
-//         );
-//         ba.learn(
-//             Some(mock_previous_state()),
-//             &mut mock_actions[1], // Action Y
-//             &mut current_state,
-//             reward,
-//         );
-
-//         let actual = ba.get_agent_context();
-
-//         let expected = AgentContext {
-//             learning_rate: 1.0,
-//             discount_factor: 0.0,
-//             priming_threshold: 10,
-//             q_values: hashmap! {
-//                 "A" => hashmap! {
-//                     "X" => ActionStats {call_count: 1, q_raw: 1.0, q_weighted: 0.6969696969696969},
-//                     "Y" => ActionStats {call_count: 1, q_raw: 1.0, q_weighted: 0.6969696969696969},
-//                     "Z" => ActionStats {call_count: 0, q_raw: 0.0, q_weighted: 0.66666666666666666},
-//                 },
-//                 "B" => hashmap! {
-//                     "X" => ActionStats {call_count: 0, q_raw: 0.0, q_weighted: 0.0},
-//                     "Y" => ActionStats {call_count: 0, q_raw: 0.0, q_weighted: 0.0},
-//                     "Z" => ActionStats {call_count: 0, q_raw: 0.0, q_weighted: 0.0},
-//                 },
-//             },
-//         };
-//         assert_eq!(expected, actual);
-//     }
-// }
+        let expected = AgentContext {
+            learning_rate: 1.0,
+            discount_factor: 0.0,
+            priming_threshold: 10,
+            q_values: hashmap! {
+                "A" => hashmap! {
+                    "X" => Box::new(ActionStats {call_count: 1, q_raw: 1.0, q_weighted: 0.6969696969696969}),
+                    "Y" => Box::new(ActionStats {call_count: 1, q_raw: 1.0, q_weighted: 0.6969696969696969}),
+                    "Z" => Box::new(ActionStats {call_count: 0, q_raw: 0.0, q_weighted: 0.66666666666666666}),
+                },
+                "B" => hashmap! {
+                    "X" => Box::new(ActionStats {call_count: 0, q_raw: 0.0, q_weighted: 0.0}),
+                    "Y" => Box::new(ActionStats {call_count: 0, q_raw: 0.0, q_weighted: 0.0}),
+                    "Z" => Box::new(ActionStats {call_count: 0, q_raw: 0.0, q_weighted: 0.0}),
+                },
+            },
+        };
+        assert_eq!(expected, actual);
+    }
+}
