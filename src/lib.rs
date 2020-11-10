@@ -3,3 +3,4 @@ pub mod bayesianagent;
 pub mod errors;
 pub mod iface;
 pub(crate) mod internal;
+pub(crate) mod mocks;

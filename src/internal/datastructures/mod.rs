@@ -50,54 +50,63 @@ where
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use crate::iface::*;
-//     use crate::internal::datastructures::QMap;
+#[cfg(test)]
+mod tests {
+    use crate::actionstats::ActionStats;
+    use crate::errors::LearnerError;
+    use crate::internal::datastructures::QMap;
+    use crate::mocks::*;
 
-//     #[test]
-//     /// If the qmap does not contain any entries for a state, the state
-//     /// should be added with an empty hashmap value.
-//     fn get_actions_for_state() {
-//         let mut action: MockActioner = MockActioner::new();
-//         action.expect_id().times(0).return_const("X");
+    #[test]
+    /// If the qmap does not contain any entries for a state, the state
+    /// should be added with an empty hashmap value.
+    fn get_actions_for_state() {
+        let state: MockStater<MockActioner> = MockStater {
+            return_id: "A",
+            return_possible_actions: vec![],
+            return_action_is_compatible: &|_| -> bool { unimplemented!() },
+            return_apply: &|_| -> Result<(), LearnerError> { unimplemented!() },
+        };
 
-//         let mut state: MockStater<MockActioner> = MockStater::new();
-//         state.expect_id().times(..).return_const("A");
+        let mut qmap: QMap<MockStater<MockActioner>, MockActioner, ActionStats> = QMap::new();
+        let result = qmap.get_actions_for_state(&state);
+        assert_eq!(result.len(), 0, "state map must be empty");
+    }
 
-//         let mut qmap: QMap<MockStater<MockActioner>, MockActioner, MockActionStatter> = QMap::new();
-//         let result = qmap.get_actions_for_state(&mut state);
-//         assert_eq!(result.len(), 0, "state map must be empty");
-//     }
+    #[test]
+    fn get_stats_no_data() {
+        let action = MockActioner { return_id: "X" };
 
-//     #[test]
-//     fn get_stats_no_data() {
-//         let mut action: MockActioner = MockActioner::new();
-//         action.expect_id().times(..).return_const("X");
+        let state: MockStater<MockActioner> = MockStater {
+            return_id: "A",
+            return_possible_actions: vec![&action],
+            return_action_is_compatible: &|_| -> bool { unimplemented!() },
+            return_apply: &|_| -> Result<(), LearnerError> { unimplemented!() },
+        };
 
-//         let mut state: MockStater<MockActioner> = MockStater::new();
-//         state.expect_id().times(..).return_const("A");
+        let mut qmap: QMap<MockStater<MockActioner>, MockActioner, ActionStats> = QMap::new();
+        let result = qmap.get_stats(&state, &action);
 
-//         let mut qmap: QMap<MockStater<MockActioner>, MockActioner, MockActionStatter> = QMap::new();
-//         let result = qmap.get_stats(&mut state, &mut action);
+        assert!(result.is_none(), "result should be None");
+    }
 
-//         assert!(result.is_none(), "result should be None");
-//     }
+    #[test]
+    fn get_stats_state_has_data() {
+        let action = MockActioner { return_id: "X" };
 
-//     #[test]
-//     fn get_stats_state_has_data() {
-//         let mut action: MockActioner = MockActioner::new();
-//         action.expect_id().times(..).return_const("X");
+        let state: MockStater<MockActioner> = MockStater {
+            return_id: "A",
+            return_possible_actions: vec![&action],
+            return_action_is_compatible: &|_| -> bool { unimplemented!() },
+            return_apply: &|_| -> Result<(), LearnerError> { unimplemented!() },
+        };
 
-//         let mut state: MockStater<MockActioner> = MockStater::new();
-//         state.expect_id().times(..).return_const("A");
+        let stats = Box::new(ActionStats::default());
 
-//         let stats: MockActionStatter = MockActionStatter::new();
+        let mut qmap: QMap<MockStater<MockActioner>, MockActioner, ActionStats> = QMap::new();
+        qmap.update_stats(&state, &action, stats);
+        let result = qmap.get_stats(&state, &action);
 
-//         let mut qmap: QMap<MockStater<MockActioner>, MockActioner, MockActionStatter> = QMap::new();
-//         qmap.update_stats(&mut state, &mut action, stats);
-//         let result = qmap.get_stats(&mut state, &mut action);
-
-//         assert!(result.is_some(), "result should be Some");
-//     }
-// }
+        assert!(result.is_some(), "result should be Some");
+    }
+}
