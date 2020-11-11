@@ -65,8 +65,15 @@ where
         self.apply_action_weights(&mut previous_state);
     }
 
-    fn transition(&self, stater: &'a S, actioner: &'a A) -> Result<(), LearnerError> {
-        unimplemented!();
+    fn transition(&self, current_state: &'a S, action: &'a A) -> Result<(), LearnerError> {
+        if !current_state.action_is_compatible(action) {
+            return Err(LearnerError::new(format!(
+                "action {} is not compatible with state {}",
+                action.id().to_string(),
+                current_state.id().to_string()
+            )));
+        }
+        current_state.apply(action)
     }
 
     fn recommend_action(&self, stater: &'a S) -> Result<&'a A, LearnerError> {
