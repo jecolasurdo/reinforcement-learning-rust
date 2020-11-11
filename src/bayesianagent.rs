@@ -238,8 +238,9 @@ mod tests {
         let ba: BayesianAgent<MockStater<MockActioner>, MockActioner, ActionStats> =
             BayesianAgent::new(0, 0.0, 0.0);
         let transition_result = ba.transition(&current_state, &action_x);
+
         assert!(transition_result.is_ok());
-        assert!(!applied_action_id.borrow().is_none());
+        assert!(applied_action_id.borrow().is_some());
         assert_eq!(action_x.id(), applied_action_id.borrow().unwrap());
     }
 }
