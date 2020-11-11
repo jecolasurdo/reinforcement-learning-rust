@@ -163,6 +163,7 @@ mod tests {
     use crate::actionstats::ActionStats;
     use crate::mocks::*;
     use maplit::hashmap;
+    use std::cell::RefCell;
 
     #[test]
     fn learn() {
@@ -211,5 +212,34 @@ mod tests {
             },
         };
         assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn transition() {
+        // returns error if action not compatible
+        // applies action otherwise
+
+        let action_x = MockActioner { return_id: "X" };
+        let mock_actions = vec![&action_x];
+
+        let applied_action_id: RefCell<Option<&str>> = RefCell::new(None);
+        let current_state = MockStater {
+            return_id: "A",
+            return_possible_actions: mock_actions,
+            return_action_is_compatible: &|_| -> bool {
+                return true;
+            },
+            return_apply: &|action| -> Result<(), LearnerError> {
+                applied_action_id.replace(Some(action.id()));
+                Ok(())
+            },
+        };
+
+        let ba: BayesianAgent<MockStater<MockActioner>, MockActioner, ActionStats> =
+            BayesianAgent::new(0, 0.0, 0.0);
+        let transition_result = ba.transition(&current_state, &action_x);
+        assert!(transition_result.is_ok());
+        assert!(!applied_action_id.borrow().is_none());
+        assert_eq!(action_x.id(), applied_action_id.borrow().unwrap());
     }
 }

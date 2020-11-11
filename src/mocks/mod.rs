@@ -16,8 +16,8 @@ where
         self.return_possible_actions.as_slice().into()
     }
 
-    fn action_is_compatible(&self, actioner: &'a A) -> bool {
-        (self.return_action_is_compatible)(actioner)
+    fn action_is_compatible(&self, action: &'a A) -> bool {
+        (self.return_action_is_compatible)(action)
     }
 
     fn get_action(&self, action_name: &str) -> Result<&'a A, LearnerError> {
@@ -37,8 +37,8 @@ where
         self.return_id
     }
 
-    fn apply(&self, actioner: &'a A) -> Result<(), LearnerError> {
-        (self.return_apply)(actioner)
+    fn apply(&self, action: &'a A) -> Result<(), LearnerError> {
+        (self.return_apply)(action)
     }
 }
 
