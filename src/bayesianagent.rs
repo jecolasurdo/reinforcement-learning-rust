@@ -11,7 +11,7 @@ where
     S: Stater<'a, A>,
     AS: ActionStatter,
 {
-    pub tie_breaker: Box<dyn Fn(usize) -> usize>,
+    pub tie_breaker: Box<dyn Fn(usize) -> usize + 'a>,
     qmap: Box<QMap<'a, S, A, AS>>,
     learning_rate: f64,
     discount_factor: f64,
@@ -206,15 +206,13 @@ mod tests {
         let previous_state = MockStater {
             return_id: "A",
             return_possible_actions: mock_actions(),
-            return_action_is_compatible: &|_| -> bool { unimplemented!() },
-            return_apply: &|_| -> Result<(), LearnerError> { unimplemented!() },
+            ..Default::default()
         };
 
         let current_state = MockStater {
             return_id: "B",
             return_possible_actions: mock_actions(),
-            return_action_is_compatible: &|_| -> bool { unimplemented!() },
-            return_apply: &|_| -> Result<(), LearnerError> { unimplemented!() },
+            ..Default::default()
         };
 
         let mut ba: BayesianAgent<MockStater<MockActioner>, MockActioner, ActionStats> =
@@ -261,6 +259,7 @@ mod tests {
                 applied_action_id.replace(Some(action.id()));
                 Ok(())
             },
+            ..Default::default()
         };
 
         let ba: BayesianAgent<MockStater<MockActioner>, MockActioner, ActionStats> =
@@ -292,6 +291,7 @@ mod tests {
                 applied_action_id.replace(Some(action.id()));
                 Ok(())
             },
+            ..Default::default()
         };
 
         let ba: BayesianAgent<MockStater<MockActioner>, MockActioner, ActionStats> =
@@ -304,5 +304,58 @@ mod tests {
             transition_result.unwrap_err().message()
         );
         assert!(applied_action_id.borrow().is_none());
+    }
+
+    #[test]
+    fn recommend_action() {
+        const TEST_STATE_ID: &str = "testStateID";
+
+        struct TestCase<'a> {
+            name: &'a str,
+            possible_actions: Vec<&'a str>,
+            tie_break_index: usize,
+            exp_action: Option<&'a str>,
+            exp_error: Option<LearnerError>,
+        }
+
+        let test_cases = vec![TestCase {
+            name: "Error if no actions",
+            possible_actions: vec![],
+            tie_break_index: 0,
+            exp_action: None,
+            exp_error: Some(LearnerError::new(format!(
+                "state '{}' reports no possible actions",
+                TEST_STATE_ID
+            ))),
+        }];
+
+        for test_case in test_cases {
+            let tie_breaker_index = test_case.tie_break_index;
+            let mut mock_actions = vec![];
+            for id in test_case.possible_actions {
+                mock_actions.push(Box::new(MockActioner { return_id: id }));
+            }
+            let state = MockStater {
+                return_id: TEST_STATE_ID,
+                return_possible_actions: mock_actions,
+                ..Default::default()
+            };
+
+            let mut a: BayesianAgent<MockStater<MockActioner>, MockActioner, ActionStats> =
+                BayesianAgent::new(0, 0.0, 0.0);
+            a.tie_breaker = Box::new(|_| tie_breaker_index);
+            let result = a.recommend_action(&state);
+            if test_case.exp_error.is_none() {
+                assert_eq!(RefCell::new(1), state.get_action_calls);
+                assert!(result.is_ok());
+                // if the test case expects no error, then their must be an
+                // expected action. The recommend_action method must return
+                // either an error or a value.
+                assert_eq!(test_case.exp_action.unwrap(), result.unwrap().id());
+            } else {
+                assert!(result.is_err());
+                assert_eq!(test_case.exp_error.unwrap(), result.unwrap_err());
+            }
+        }
     }
 }

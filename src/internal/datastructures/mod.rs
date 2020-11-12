@@ -64,8 +64,7 @@ mod tests {
         let state: MockStater<MockActioner> = MockStater {
             return_id: "A",
             return_possible_actions: vec![],
-            return_action_is_compatible: &|_| -> bool { unimplemented!() },
-            return_apply: &|_| -> Result<(), LearnerError> { unimplemented!() },
+            ..Default::default()
         };
 
         let mut qmap: QMap<MockStater<MockActioner>, MockActioner, ActionStats> = QMap::new();
@@ -80,8 +79,7 @@ mod tests {
         let state: MockStater<MockActioner> = MockStater {
             return_id: "A",
             return_possible_actions: vec![&action],
-            return_action_is_compatible: &|_| -> bool { unimplemented!() },
-            return_apply: &|_| -> Result<(), LearnerError> { unimplemented!() },
+            ..Default::default()
         };
 
         let mut qmap: QMap<MockStater<MockActioner>, MockActioner, ActionStats> = QMap::new();
@@ -97,8 +95,7 @@ mod tests {
         let state: MockStater<MockActioner> = MockStater {
             return_id: "A",
             return_possible_actions: vec![&action],
-            return_action_is_compatible: &|_| -> bool { unimplemented!() },
-            return_apply: &|_| -> Result<(), LearnerError> { unimplemented!() },
+            ..Default::default()
         };
 
         let stats = Box::new(ActionStats::default());

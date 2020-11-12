@@ -1,11 +1,25 @@
 use crate::errors::LearnerError;
 use crate::iface::*;
+use std::cell::RefCell;
 
 pub(crate) struct MockStater<'a, A> {
     pub(crate) return_id: &'a str,
     pub(crate) return_possible_actions: Vec<&'a A>,
     pub(crate) return_action_is_compatible: &'a dyn Fn(&'a A) -> bool,
     pub(crate) return_apply: &'a dyn Fn(&'a A) -> Result<(), LearnerError>,
+    pub(crate) get_action_calls: RefCell<i64>,
+}
+
+impl<'a, A> Default for MockStater<'a, A> {
+    fn default() -> Self {
+        Self {
+            return_id: "",
+            return_possible_actions: vec![],
+            return_action_is_compatible: &|_| -> bool { unimplemented!() },
+            return_apply: &|_| -> Result<(), LearnerError> { unimplemented!() },
+            get_action_calls: RefCell::new(0),
+        }
+    }
 }
 
 impl<'a, A> Stater<'a, A> for MockStater<'a, A>
@@ -21,6 +35,7 @@ where
     }
 
     fn get_action(&self, action_name: &str) -> Result<&'a A, LearnerError> {
+        self.get_action_calls.replace_with(|&mut x| x + 1);
         for action in &self.return_possible_actions {
             if action.id() == action_name {
                 return Ok(action);
@@ -42,6 +57,7 @@ where
     }
 }
 
+#[derive(Debug)]
 pub(crate) struct MockActioner<'a> {
     pub(crate) return_id: &'a str,
 }
