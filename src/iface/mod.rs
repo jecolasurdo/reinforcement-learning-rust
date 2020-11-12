@@ -42,7 +42,7 @@ where
 {
     /// Recommends an action given a state and the model that the agent has
     /// learned thus far.
-    fn recommend_action(&self, stater: &'a S) -> Result<&'a A, LearnerError>;
+    fn recommend_action(&mut self, stater: &'a S) -> Result<&'a A, LearnerError>;
 
     /// Applies an action to a given state.
     /// Implementors should take care to ensure that this method returns an

@@ -11,7 +11,7 @@ where
     S: Stater<'a, A>,
     AS: ActionStatter,
 {
-    pub tie_breaker: Box<dyn Fn(i64) -> i64>,
+    pub tie_breaker: Box<dyn Fn(usize) -> usize>,
     qmap: Box<QMap<'a, S, A, AS>>,
     learning_rate: f64,
     discount_factor: f64,
@@ -76,8 +76,39 @@ where
         current_state.apply(action)
     }
 
-    fn recommend_action(&self, stater: &'a S) -> Result<&'a A, LearnerError> {
-        unimplemented!();
+    fn recommend_action(&mut self, state: &'a S) -> Result<&'a A, LearnerError> {
+        struct ActionValue<'a> {
+            a: &'a str,
+            v: f64,
+        }
+
+        let mut best_actions: Vec<ActionValue> = Vec::new();
+        let mut best_value = -1.0 * f64::MAX;
+
+        self.apply_action_weights(state);
+        for (action, stats) in self.qmap.get_actions_for_state(state) {
+            let av = ActionValue {
+                a: action,
+                v: stats.q_value_weighted(),
+            };
+
+            if av.v > best_value {
+                best_value = av.v;
+                best_actions = vec![av];
+            } else if av.v == best_value {
+                best_actions.push(av);
+            }
+        }
+
+        if best_actions.len() == 0 {
+            return Err(LearnerError::new(format!(
+                "state '{}' reports no possible actions",
+                state.id()
+            )));
+        }
+
+        let tie_breaker = (self.tie_breaker)(best_actions.len());
+        state.get_action(best_actions[tie_breaker].a)
     }
 }
 
@@ -98,7 +129,7 @@ where
         AS: ActionStatter,
     {
         BayesianAgent {
-            tie_breaker: Box::new(|n: i64| -> i64 { rand::thread_rng().gen_range(0, n) }),
+            tie_breaker: Box::new(|n: usize| -> usize { rand::thread_rng().gen_range(0, n) }),
             qmap: Box::new(QMap::new()),
             learning_rate,
             discount_factor,
@@ -120,15 +151,15 @@ where
     fn apply_action_weights(&mut self, state: &'a S) {
         let mut raw_value_sum = 0.0;
         let mut existing_action_count = 0;
-        for mut action in state.possible_actions() {
-            match self.qmap.get_stats(state, &mut action) {
+        for action in state.possible_actions() {
+            match self.qmap.get_stats(state, &action) {
                 Some(s) => {
                     raw_value_sum += s.q_value_raw();
                     existing_action_count += 1;
                 }
                 None => self
                     .qmap
-                    .update_stats(state, &mut action, Box::new(AS::default())),
+                    .update_stats(state, &action, Box::new(AS::default())),
             }
         }
 
