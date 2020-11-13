@@ -309,7 +309,7 @@ mod tests {
         let current_state = MockStater {
             return_id: "A",
             return_possible_actions: mock_actions,
-            return_action_is_compatible: &|_| -> bool { true },
+            return_action_is_compatible: &|_| true,
             return_apply: &|action| -> Result<(), LearnerError> {
                 applied_action_id.replace(Some(action.id()));
                 Ok(())
@@ -339,7 +339,7 @@ mod tests {
         let current_state = MockStater {
             return_id: "A",
             return_possible_actions: known_actions,
-            return_action_is_compatible: &|_| -> bool { false },
+            return_action_is_compatible: &|_| false,
             return_apply: &|action| -> Result<(), LearnerError> {
                 applied_action_id.replace(Some(action.id()));
                 Ok(())
@@ -391,7 +391,7 @@ mod tests {
                 exp_result: Ok("A"),
             },
             TestCase {
-                name: "Action choesn when tied",
+                name: "Action chosen when tied",
                 possible_actions: vec![&action_a, &action_b],
                 tie_break_index: 1,
                 exp_result: Ok("B"),
