@@ -309,7 +309,7 @@ mod tests {
     #[test]
     fn recommend_action() {
         const TEST_STATE_ID: &str = "testStateID";
-        const EXP_GET_ACTION_CALLS: i64 = 0;
+        const EXP_GET_ACTION_CALLS: i64 = 1;
 
         struct TestCase<'a> {
             name: &'a str,
@@ -318,15 +318,25 @@ mod tests {
             exp_result: Result<&'a str, LearnerError>,
         }
 
-        let test_cases = vec![TestCase {
-            name: "Error if no actions",
-            possible_actions: vec![],
-            tie_break_index: 0,
-            exp_result: Err(LearnerError::new(format!(
-                "state '{}' reports no possible actions",
-                TEST_STATE_ID
-            ))),
-        }];
+        let action_a = MockActioner { return_id: "A" };
+
+        let test_cases = vec![
+            TestCase {
+                name: "Error if no actions",
+                possible_actions: vec![],
+                tie_break_index: 0,
+                exp_result: Err(LearnerError::new(format!(
+                    "state '{}' reports no possible actions",
+                    TEST_STATE_ID
+                ))),
+            },
+            TestCase {
+                name: "Action returned when bootstrapping",
+                possible_actions: vec![&action_a],
+                tie_break_index: 0,
+                exp_result: Ok("A"),
+            },
+        ];
 
         for test_case in test_cases {
             let tie_breaker_index = test_case.tie_break_index;
