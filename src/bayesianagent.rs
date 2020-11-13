@@ -319,6 +319,7 @@ mod tests {
         }
 
         let action_a = MockActioner { return_id: "A" };
+        let action_b = MockActioner { return_id: "B" };
 
         let test_cases = vec![
             TestCase {
@@ -335,6 +336,12 @@ mod tests {
                 possible_actions: vec![&action_a],
                 tie_break_index: 0,
                 exp_result: Ok("A"),
+            },
+            TestCase {
+                name: "Action choesn when tied",
+                possible_actions: vec![&action_a, &action_b],
+                tie_break_index: 1,
+                exp_result: Ok("B"),
             },
         ];
 
