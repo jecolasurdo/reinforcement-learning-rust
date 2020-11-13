@@ -5,6 +5,26 @@ use rand::Rng;
 use std::collections::HashMap;
 use std::marker;
 
+/// BayesianAgent provides facilities for 1) maintaining the learning state of
+/// an environment, 2) making recommendations for actions based on the previous,
+/// current, and predicted states of the system, and 3) executing actions that
+/// have been recommended by the agent.
+///
+/// The BayesianAgent is so named because of the way it handles initial
+/// conditions of the q-values associated with each of a state's actions.
+/// When the agent is asked to recommend an action for some state, the agent
+/// does so by choosing the action that has previously recorded a greater
+/// cumulative reward than other possible actions.
+///
+/// This poses a dilema for initial conditions when no reward has been
+/// previously recorded for one or more of the potential actions. To overcome
+/// this, the BayesianAgent applies a Bayesian Average function to each
+/// potential action. In essense, when an action has been called few (or zero)
+/// times, it is assumed that the reward for calling that action might be
+/// similar to that of calling any other action. Thus the agent weights its
+/// potential reward closer to the mean of all other actions. However, as an
+/// action is called more times, the agent begins to evaluate the action on its
+/// observed cumulative reward moreso than the mean of all other actions.
 pub struct BayesianAgent<'a, S, A, AS>
 where
     A: Actioner<'a>,
@@ -34,6 +54,14 @@ where
     A: Actioner<'a>,
     AS: ActionStatter,
 {
+    /// 'learn' updates the reinforcement model according to a transition that
+    /// has occured from a previous state, through some action, to a current
+    /// state. The reward value represents the positive, negative, or neutral
+    /// impact that the transition has had on the environment. `previous_state`
+    /// may be None if no action has been previously taken or there is no
+    /// previous state (aka the system is being bootstrapped). In that case,
+    /// learn becomes a no-op.
+    /// See https://en.wikipedia.org/wiki/Q-learning#Algorithm
     fn learn(
         &mut self,
         previous_state: Option<&'a S>,
@@ -65,6 +93,7 @@ where
         self.apply_action_weights(&mut previous_state);
     }
 
+    /// `transition` applies an action to a given state.
     fn transition(&self, current_state: &'a S, action: &'a A) -> Result<(), LearnerError> {
         if !current_state.action_is_compatible(action) {
             return Err(LearnerError::new(format!(
@@ -76,6 +105,11 @@ where
         current_state.apply(action)
     }
 
+    /// `recommend_action` recommends an action for a given state based on
+    /// behavior of the system that the agent has learned thus far.
+    /// If the q-value for two or more actions are the same, the action is
+    /// chosen according to a tie-breaking function. See BayesianAgent docs for
+    /// more information.
     fn recommend_action(&mut self, state: &'a S) -> Result<&'a A, LearnerError> {
         struct ActionValue<'a> {
             a: &'a str,
@@ -107,10 +141,10 @@ where
             )));
         }
 
-        // Order of records in a hashmap is not deterministic, so we sort
-        // alphabetically by action id to get a consistent result.
-        // note that it is documented that it is the implementor's
-        // responsibility to ensure that each action's id is unique across
+        // Order of records in a hashmap is nondeterministic, so we sort
+        // alphabetically by action ID to get a deterministic result.
+        // Note that it is documented that it is the implementor's
+        // responsibility to ensure that each action's ID is unique across all
         // possible actions within the scope of the agent, and that having
         // different actions share an ID will cause undefined behavior.
         best_actions.sort_by(|x, y| x.a.cmp(y.a));
@@ -125,6 +159,23 @@ where
     A: Actioner<'a>,
     AS: ActionStatter,
 {
+    /// new returns a reference to a new BayesianAgent.
+    ///
+    /// priming_threshold:
+    ///  The number of observations required of any action before the action's
+    ///  raw q-value is trusted more than average q-value for all of a state's
+    ///  actions.
+    ///
+    /// learning_rate:
+    ///  Typically a number between 0 and 1 (though it can exceed 1)
+    ///  From wikipedia: Determins to what extent newly acquired information
+    ///  overrides old information.
+    ///  see: https://en.wikipedia.org/wiki/Q-learning#Learning_Rate
+    ///
+    /// discount_factor:
+    ///  From wikipedia: The discount factor determines the importance of future
+    ///  rewards.
+    ///  see: https://en.wikipedia.org/wiki/Q-learning#Discount_factor
     pub fn new(
         priming_threshold: i64,
         learning_rate: f64,
