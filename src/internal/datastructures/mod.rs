@@ -53,7 +53,6 @@ where
 #[cfg(test)]
 mod tests {
     use crate::actionstats::ActionStats;
-    use crate::errors::LearnerError;
     use crate::internal::datastructures::QMap;
     use crate::mocks::*;
 
