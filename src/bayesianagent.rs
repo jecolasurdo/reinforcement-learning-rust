@@ -107,6 +107,13 @@ where
             )));
         }
 
+        // Order of records in a hashmap is not deterministic, so we sort
+        // alphabetically by action id to get a consistent result.
+        // note that it is documented that it is the implementor's
+        // responsibility to ensure that each action's id is unique across
+        // possible actions within the scope of the agent, and that having
+        // different actions share an ID will cause undefined behavior.
+        best_actions.sort_by(|x, y| x.a.cmp(y.a));
         let tie_breaker = (self.tie_breaker)(best_actions.len());
         state.get_action(best_actions[tie_breaker].a)
     }
