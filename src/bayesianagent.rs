@@ -72,9 +72,9 @@ where
         if previous_state.is_none() {
             return;
         }
-        let mut previous_state = previous_state.unwrap();
+        let previous_state = previous_state.unwrap();
         let mut stats = match self.qmap.get_stats(previous_state, action_taken) {
-            Some(s) => s.clone(),
+            Some(s) => s,
             None => Box::new(AS::default()),
         };
 
@@ -88,9 +88,8 @@ where
         );
         stats.set_calls(stats.calls() + 1);
         stats.set_q_value_raw(new_value);
-        self.qmap
-            .update_stats(&mut previous_state, action_taken, stats);
-        self.apply_action_weights(&mut previous_state);
+        self.qmap.update_stats(&previous_state, action_taken, stats);
+        self.apply_action_weights(&previous_state);
     }
 
     /// `transition` applies an action to a given state.
@@ -129,12 +128,12 @@ where
             if av.v > best_value {
                 best_value = av.v;
                 best_actions = vec![av];
-            } else if av.v == best_value {
+            } else if (av.v - best_value).abs() < f64::EPSILON {
                 best_actions.push(av);
             }
         }
 
-        if best_actions.len() == 0 {
+        if best_actions.is_empty() {
             return Err(LearnerError::new(format!(
                 "state '{}' reports no possible actions",
                 state.id()
@@ -223,7 +222,7 @@ where
 
         let mean = math::safe_divide(raw_value_sum, existing_action_count as f64);
         let action_stats = self.qmap.get_actions_for_state(state);
-        for (_, stats) in action_stats {
+        for stats in action_stats.values_mut() {
             let weighted_mean = math::bayesian_average(
                 self.priming_threshold as f64,
                 stats.calls() as f64,
@@ -236,7 +235,7 @@ where
 
     fn get_best_value(&mut self, state: &'a S) -> f64 {
         let mut best_q_value = 0.0;
-        for (_, stat) in self.qmap.get_actions_for_state(state) {
+        for stat in self.qmap.get_actions_for_state(state).values() {
             let q = stat.q_value_weighted();
             if q > best_q_value {
                 best_q_value = q;
@@ -287,9 +286,9 @@ mod tests {
             priming_threshold: 10,
             q_values: hashmap! {
                 "A" => hashmap! {
-                    "X" => Box::new(ActionStats {call_count: 1, q_raw: 1.0, q_weighted: 0.6969696969696969}),
-                    "Y" => Box::new(ActionStats {call_count: 1, q_raw: 1.0, q_weighted: 0.6969696969696969}),
-                    "Z" => Box::new(ActionStats {call_count: 0, q_raw: 0.0, q_weighted: 0.66666666666666666}),
+                    "X" => Box::new(ActionStats {call_count: 1, q_raw: 1.0, q_weighted: 0.696_969_696_969_696_9}),
+                    "Y" => Box::new(ActionStats {call_count: 1, q_raw: 1.0, q_weighted: 0.696_969_696_969_696_9}),
+                    "Z" => Box::new(ActionStats {call_count: 0, q_raw: 0.0, q_weighted: 0.666_666_666_666_666_6}),
                 },
                 "B" => hashmap! {
                     "X" => Box::new(ActionStats {call_count: 0, q_raw: 0.0, q_weighted: 0.0}),
@@ -310,9 +309,7 @@ mod tests {
         let current_state = MockStater {
             return_id: "A",
             return_possible_actions: mock_actions,
-            return_action_is_compatible: &|_| -> bool {
-                return true;
-            },
+            return_action_is_compatible: &|_| -> bool { true },
             return_apply: &|action| -> Result<(), LearnerError> {
                 applied_action_id.replace(Some(action.id()));
                 Ok(())
@@ -342,9 +339,7 @@ mod tests {
         let current_state = MockStater {
             return_id: "A",
             return_possible_actions: known_actions,
-            return_action_is_compatible: &|_| -> bool {
-                return false;
-            },
+            return_action_is_compatible: &|_| -> bool { false },
             return_apply: &|action| -> Result<(), LearnerError> {
                 applied_action_id.replace(Some(action.id()));
                 Ok(())
@@ -358,7 +353,7 @@ mod tests {
 
         assert!(transition_result.is_err());
         assert_eq!(
-            format!("action {} is not compatible with state {}", "unknown", "A").to_string(),
+            format!("action {} is not compatible with state {}", "unknown", "A"),
             transition_result.unwrap_err().message()
         );
         assert!(applied_action_id.borrow().is_none());
