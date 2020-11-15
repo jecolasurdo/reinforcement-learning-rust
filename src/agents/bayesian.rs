@@ -38,7 +38,7 @@ where
     qmap: Box<QMap<'a, S, A, AS>>,
     learning_rate: f64,
     discount_factor: f64,
-    priming_threshold: i64,
+    priming_threshold: i32,
     _actioner: marker::PhantomData<A>,
     _stater: marker::PhantomData<S>,
 }
@@ -47,7 +47,7 @@ where
 pub struct AgentContext<'a, AS: ActionStatter> {
     pub learning_rate: f64,
     pub discount_factor: f64,
-    pub priming_threshold: i64,
+    pub priming_threshold: i32,
     pub q_values: HashMap<&'a str, HashMap<&'a str, Box<AS>>>,
 }
 
@@ -64,7 +64,7 @@ where
     /// may be None if no action has been previously taken or there is no
     /// previous state (aka the system is being bootstrapped). In that case,
     /// learn becomes a no-op.
-    /// See https://en.wikipedia.org/wiki/Q-learning#Algorithm
+    /// See [https://en.wikipedia.org/wiki/Q-learning#Algorithm](https://en.wikipedia.org/wiki/Q-learning#Algorithm)
     fn learn(
         &mut self,
         previous_state: Option<&'a S>,
@@ -163,23 +163,23 @@ where
 {
     /// new returns a reference to a new Agent.
     ///
-    /// priming_threshold:
+    /// `priming_threshold`:
     ///  The number of observations required of any action before the action's
     ///  raw q-value is trusted more than average q-value for all of a state's
     ///  actions.
     ///
-    /// learning_rate:
+    /// `learning_rate`:
     ///  Typically a number between 0 and 1 (though it can exceed 1)
     ///  From wikipedia: Determins to what extent newly acquired information
     ///  overrides old information.
-    ///  see: https://en.wikipedia.org/wiki/Q-learning#Learning_Rate
+    ///  see: [https://en.wikipedia.org/wiki/Q-learning#Learning_Rate](https://en.wikipedia.org/wiki/Q-learning#Learning_Rate)
     ///
-    /// discount_factor:
+    /// `discount_factor`:
     ///  From wikipedia: The discount factor determines the importance of future
     ///  rewards.
-    ///  see: https://en.wikipedia.org/wiki/Q-learning#Discount_factor
+    ///  see: [https://en.wikipedia.org/wiki/Q-learning#Discount_factor](https://en.wikipedia.org/wiki/Q-learning#Discount_factor)
     pub fn new(
-        priming_threshold: i64,
+        priming_threshold: i32,
         learning_rate: f64,
         discount_factor: f64,
     ) -> Agent<'a, S, A, AS>
@@ -223,12 +223,12 @@ where
             }
         }
 
-        let mean = math::safe_divide(raw_value_sum, existing_action_count as f64);
+        let mean = math::safe_divide(raw_value_sum, f64::from(existing_action_count));
         let action_stats = self.qmap.get_actions_for_state(state);
         for stats in action_stats.values_mut() {
             let weighted_mean = math::bayesian_average(
-                self.priming_threshold as f64,
-                stats.calls() as f64,
+                f64::from(self.priming_threshold),
+                f64::from(stats.calls()),
                 mean,
                 stats.q_value_raw(),
             );
@@ -249,6 +249,7 @@ where
 }
 
 #[cfg(test)]
+#[allow(clippy::wildcard_imports, clippy::default_trait_access)]
 mod tests {
     use super::*;
     use crate::mocks::*;

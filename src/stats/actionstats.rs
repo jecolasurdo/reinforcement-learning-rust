@@ -3,7 +3,7 @@ use crate::stats::ActionStatter;
 /// Contains statistics about an action that has been applied to some state.
 #[derive(PartialEq, Debug, Default, Copy, Clone)]
 pub struct Stats {
-    pub(crate) call_count: i64,
+    pub(crate) call_count: i32,
 
     /// This is the raw q-value associated with this action.
     pub(crate) q_raw: f64,
@@ -15,12 +15,12 @@ pub struct Stats {
 
 impl ActionStatter for Stats {
     /// Returns the number of times this action has been called.
-    fn calls(&self) -> i64 {
+    fn calls(&self) -> i32 {
         self.call_count
     }
 
     /// Sets the number of times this action has been called.
-    fn set_calls(&mut self, n: i64) {
+    fn set_calls(&mut self, n: i32) {
         self.call_count = n
     }
 

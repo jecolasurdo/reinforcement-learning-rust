@@ -52,6 +52,7 @@ where
 }
 
 #[cfg(test)]
+#[allow(clippy::wildcard_imports, clippy::default_trait_access)]
 mod tests {
     use crate::internal::datastructures::QMap;
     use crate::mocks::*;

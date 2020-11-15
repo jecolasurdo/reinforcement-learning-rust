@@ -1,9 +1,13 @@
 #![warn(
     clippy::all,
-    // clippy::restriction,
-    // clippy::pedantic,
+    clippy::pedantic,
     // clippy::nursery,
-    // clippy::cargo
+)]
+#![allow(
+    clippy::must_use_candidate,
+    clippy::float_cmp,
+    clippy::similar_names,
+    clippy::missing_errors_doc
 )]
 
 pub mod actions;
