@@ -1,6 +1,7 @@
+use crate::actions::Actioner;
+use crate::states::Stater;
+use crate::stats::ActionStatter;
 use std::{collections::HashMap, marker};
-
-use crate::iface::{ActionStatter, Actioner, Stater};
 
 #[derive(Clone)]
 pub(crate) struct QMap<'a, S, A, AS>
@@ -52,9 +53,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::actionstats::ActionStats;
     use crate::internal::datastructures::QMap;
     use crate::mocks::*;
+    use crate::stats::actionstats::Stats;
 
     #[test]
     /// If the qmap does not contain any entries for a state, the state
@@ -66,7 +67,7 @@ mod tests {
             ..Default::default()
         };
 
-        let mut qmap: QMap<MockStater<MockActioner>, MockActioner, ActionStats> = QMap::new();
+        let mut qmap: QMap<MockStater<MockActioner>, MockActioner, Stats> = QMap::new();
         let result = qmap.get_actions_for_state(&state);
         assert_eq!(result.len(), 0, "state map must be empty");
     }
@@ -81,7 +82,7 @@ mod tests {
             ..Default::default()
         };
 
-        let mut qmap: QMap<MockStater<MockActioner>, MockActioner, ActionStats> = QMap::new();
+        let mut qmap: QMap<MockStater<MockActioner>, MockActioner, Stats> = QMap::new();
         let result = qmap.get_stats(&state, &action);
 
         assert!(result.is_none(), "result should be None");
@@ -97,9 +98,9 @@ mod tests {
             ..Default::default()
         };
 
-        let stats = Box::new(ActionStats::default());
+        let stats = Box::new(Stats::default());
 
-        let mut qmap: QMap<MockStater<MockActioner>, MockActioner, ActionStats> = QMap::new();
+        let mut qmap: QMap<MockStater<MockActioner>, MockActioner, Stats> = QMap::new();
         qmap.update_stats(&state, &action, stats);
         let result = qmap.get_stats(&state, &action);
 

@@ -1,8 +1,8 @@
-use crate::iface::ActionStatter;
+use crate::stats::ActionStatter;
 
 /// Contains statistics about an action that has been applied to some state.
 #[derive(PartialEq, Debug, Default, Copy, Clone)]
-pub struct ActionStats {
+pub struct Stats {
     pub(crate) call_count: i64,
 
     /// This is the raw q-value associated with this action.
@@ -13,7 +13,7 @@ pub struct ActionStats {
     pub(crate) q_weighted: f64,
 }
 
-impl ActionStatter for ActionStats {
+impl ActionStatter for Stats {
     /// Returns the number of times this action has been called.
     fn calls(&self) -> i64 {
         self.call_count

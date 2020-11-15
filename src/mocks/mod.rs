@@ -1,5 +1,6 @@
+use crate::actions::Actioner;
 use crate::errors::LearnerError;
-use crate::iface::*;
+use crate::states::Stater;
 use std::cell::RefCell;
 
 pub(crate) struct MockStater<'a, A> {

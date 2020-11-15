@@ -1,16 +1,19 @@
-use crate::iface::{ActionStatter, Actioner, Agenter, Stater};
+use crate::actions::Actioner;
+use crate::agents::Agenter;
 use crate::internal::datastructures::QMap;
+use crate::states::Stater;
+use crate::stats::ActionStatter;
 use crate::{errors::LearnerError, internal::math};
 use rand::Rng;
 use std::collections::HashMap;
 use std::marker;
 
-/// BayesianAgent provides facilities for 1) maintaining the learning state of
+/// Agent provides facilities for 1) maintaining the learning state of
 /// an environment, 2) making recommendations for actions based on the previous,
 /// current, and predicted states of the system, and 3) executing actions that
 /// have been recommended by the agent.
 ///
-/// The BayesianAgent is so named because of the way it handles initial
+/// The Agent is so named because of the way it handles initial
 /// conditions of the q-values associated with each of a state's actions.
 /// When the agent is asked to recommend an action for some state, the agent
 /// does so by choosing the action that has previously recorded a greater
@@ -18,14 +21,14 @@ use std::marker;
 ///
 /// This poses a dilema for initial conditions when no reward has been
 /// previously recorded for one or more of the potential actions. To overcome
-/// this, the BayesianAgent applies a Bayesian Average function to each
+/// this, the Agent applies a Bayesian Average function to each
 /// potential action. In essense, when an action has been called few (or zero)
 /// times, it is assumed that the reward for calling that action might be
 /// similar to that of calling any other action. Thus the agent weights its
 /// potential reward closer to the mean of all other actions. However, as an
 /// action is called more times, the agent begins to evaluate the action on its
 /// observed cumulative reward moreso than the mean of all other actions.
-pub struct BayesianAgent<'a, S, A, AS>
+pub struct Agent<'a, S, A, AS>
 where
     A: Actioner<'a>,
     S: Stater<'a, A>,
@@ -48,7 +51,7 @@ pub struct AgentContext<'a, AS: ActionStatter> {
     pub q_values: HashMap<&'a str, HashMap<&'a str, Box<AS>>>,
 }
 
-impl<'a, S, A, AS> Agenter<'a, S, A> for BayesianAgent<'a, S, A, AS>
+impl<'a, S, A, AS> Agenter<'a, S, A> for Agent<'a, S, A, AS>
 where
     S: Stater<'a, A>,
     A: Actioner<'a>,
@@ -107,7 +110,7 @@ where
     /// `recommend_action` recommends an action for a given state based on
     /// behavior of the system that the agent has learned thus far.
     /// If the q-value for two or more actions are the same, the action is
-    /// chosen according to a tie-breaking function. See BayesianAgent docs for
+    /// chosen according to a tie-breaking function. See Agent docs for
     /// more information.
     fn recommend_action(&mut self, state: &'a S) -> Result<&'a A, LearnerError> {
         struct ActionValue<'a> {
@@ -152,13 +155,13 @@ where
     }
 }
 
-impl<'a, S, A: 'a, AS> BayesianAgent<'a, S, A, AS>
+impl<'a, S, A: 'a, AS> Agent<'a, S, A, AS>
 where
     S: Stater<'a, A>,
     A: Actioner<'a>,
     AS: ActionStatter,
 {
-    /// new returns a reference to a new BayesianAgent.
+    /// new returns a reference to a new Agent.
     ///
     /// priming_threshold:
     ///  The number of observations required of any action before the action's
@@ -179,13 +182,13 @@ where
         priming_threshold: i64,
         learning_rate: f64,
         discount_factor: f64,
-    ) -> BayesianAgent<'a, S, A, AS>
+    ) -> Agent<'a, S, A, AS>
     where
         S: Stater<'a, A>,
         A: Actioner<'a>,
         AS: ActionStatter,
     {
-        BayesianAgent {
+        Agent {
             tie_breaker: Box::new(|n: usize| -> usize { rand::thread_rng().gen_range(0, n) }),
             qmap: Box::new(QMap::new()),
             learning_rate,
@@ -248,8 +251,8 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::actionstats::ActionStats;
     use crate::mocks::*;
+    use crate::stats::actionstats::Stats;
     use maplit::hashmap;
     use std::cell::RefCell;
 
@@ -272,8 +275,7 @@ mod tests {
             ..Default::default()
         };
 
-        let mut ba: BayesianAgent<MockStater<MockActioner>, MockActioner, ActionStats> =
-            BayesianAgent::new(10, 1.0, 0.0);
+        let mut ba: Agent<MockStater<MockActioner>, MockActioner, Stats> = Agent::new(10, 1.0, 0.0);
         let reward = 1.0;
         ba.learn(Some(&previous_state), &action_x, &current_state, reward);
         ba.learn(Some(&previous_state), &action_y, &current_state, reward);
@@ -286,14 +288,14 @@ mod tests {
             priming_threshold: 10,
             q_values: hashmap! {
                 "A" => hashmap! {
-                    "X" => Box::new(ActionStats {call_count: 1, q_raw: 1.0, q_weighted: 0.696_969_696_969_696_9}),
-                    "Y" => Box::new(ActionStats {call_count: 1, q_raw: 1.0, q_weighted: 0.696_969_696_969_696_9}),
-                    "Z" => Box::new(ActionStats {call_count: 0, q_raw: 0.0, q_weighted: 0.666_666_666_666_666_6}),
+                    "X" => Box::new(Stats {call_count: 1, q_raw: 1.0, q_weighted: 0.696_969_696_969_696_9}),
+                    "Y" => Box::new(Stats {call_count: 1, q_raw: 1.0, q_weighted: 0.696_969_696_969_696_9}),
+                    "Z" => Box::new(Stats {call_count: 0, q_raw: 0.0, q_weighted: 0.666_666_666_666_666_6}),
                 },
                 "B" => hashmap! {
-                    "X" => Box::new(ActionStats {call_count: 0, q_raw: 0.0, q_weighted: 0.0}),
-                    "Y" => Box::new(ActionStats {call_count: 0, q_raw: 0.0, q_weighted: 0.0}),
-                    "Z" => Box::new(ActionStats {call_count: 0, q_raw: 0.0, q_weighted: 0.0}),
+                    "X" => Box::new(Stats {call_count: 0, q_raw: 0.0, q_weighted: 0.0}),
+                    "Y" => Box::new(Stats {call_count: 0, q_raw: 0.0, q_weighted: 0.0}),
+                    "Z" => Box::new(Stats {call_count: 0, q_raw: 0.0, q_weighted: 0.0}),
                 },
             },
         };
@@ -317,8 +319,7 @@ mod tests {
             ..Default::default()
         };
 
-        let ba: BayesianAgent<MockStater<MockActioner>, MockActioner, ActionStats> =
-            BayesianAgent::new(0, 0.0, 0.0);
+        let ba: Agent<MockStater<MockActioner>, MockActioner, Stats> = Agent::new(0, 0.0, 0.0);
         let transition_result = ba.transition(&current_state, &action_x);
 
         assert!(transition_result.is_ok());
@@ -347,8 +348,7 @@ mod tests {
             ..Default::default()
         };
 
-        let ba: BayesianAgent<MockStater<MockActioner>, MockActioner, ActionStats> =
-            BayesianAgent::new(0, 0.0, 0.0);
+        let ba: Agent<MockStater<MockActioner>, MockActioner, Stats> = Agent::new(0, 0.0, 0.0);
         let transition_result = ba.transition(&current_state, &unknown_action);
 
         assert!(transition_result.is_err());
@@ -406,8 +406,8 @@ mod tests {
                 ..Default::default()
             };
 
-            let mut a: BayesianAgent<MockStater<MockActioner>, MockActioner, ActionStats> =
-                BayesianAgent::new(0, 0.0, 0.0);
+            let mut a: Agent<MockStater<MockActioner>, MockActioner, Stats> =
+                Agent::new(0, 0.0, 0.0);
             a.tie_breaker = Box::new(|_| tie_breaker_index);
             let act_result = a.recommend_action(&state);
             let test_name = test_case.name;
