@@ -1,10 +1,14 @@
 [package]
-name = "reinforcement-learning-rust"
-version = "0.1.0"
-authors = ["Joe <jecolasurdo@gmail.com>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+name = "rlr"
+version = "0.1.0"
+authors = ["Joe Colasurdo<jecolasurdo@gmail.com>"]
+license-file = "license.txt"
+description = "A small reinforcement-learning framework."
+homepage = "https://github.com/jecolasurdo/reinforcement-learning-rust"
+documentation = "https://docs.rs/rlr"
+repository = "https://github.com/jecolasurdo/reinforcement-learning-rust"
+readme = "README.md"
 
 [dependencies]
 mockall = "0.8.3"
