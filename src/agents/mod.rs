@@ -21,7 +21,7 @@ where
     /// error if the supplied action is not applicable to the specified state.
     fn transition(&self, stater: &'a S, actioner: &'a A) -> Result<(), LearnerError>;
 
-    // Updates the model for a given state and action using the provided reward.
+    /// Updates the model for a given state and action using the provided reward.
     fn learn(
         &mut self,
         previous_state: Option<&'a S>,

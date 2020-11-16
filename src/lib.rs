@@ -1,12 +1,17 @@
 #![warn(
+    missing_docs,
+    missing_doc_code_examples,
+    broken_intra_doc_links,
+    missing_debug_implementations
+)]
+#![warn(
     clippy::all,
     clippy::pedantic,
     clippy::nursery,
     clippy::as_conversions,
     clippy::todo,
     clippy::print_stdout,
-    clippy::use_debug,
-    clippy::clippy::missing_docs_in_private_items
+    clippy::use_debug
 )]
 #![allow(
     clippy::must_use_candidate,

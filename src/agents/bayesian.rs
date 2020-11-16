@@ -113,6 +113,7 @@ where
     /// chosen according to a tie-breaking function. See Agent docs for
     /// more information.
     fn recommend_action(&mut self, state: &'a S) -> Result<&'a A, LearnerError> {
+        #[allow(clippy::missing_docs_in_private_items)]
         struct ActionValue<'a> {
             a: &'a str,
             v: f64,
