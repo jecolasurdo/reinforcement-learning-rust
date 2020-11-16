@@ -249,7 +249,7 @@ where
 }
 
 #[cfg(test)]
-#[allow(clippy::wildcard_imports, clippy::default_trait_access)]
+#[allow(clippy::wildcard_imports, clippy::default_trait_access, clippy::panic)]
 mod tests {
     use super::*;
     use crate::mocks::*;

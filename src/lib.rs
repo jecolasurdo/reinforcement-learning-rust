@@ -1,4 +1,13 @@
-#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
+#![warn(
+    clippy::all,
+    clippy::pedantic,
+    clippy::nursery,
+    clippy::as_conversions,
+    clippy::todo,
+    clippy::print_stdout,
+    clippy::use_debug,
+    clippy::clippy::missing_docs_in_private_items
+)]
 #![allow(
     clippy::must_use_candidate,
     clippy::float_cmp,

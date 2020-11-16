@@ -42,6 +42,7 @@ pub fn safe_divide(dividend: f64, divisor: f64) -> f64 {
 }
 
 #[cfg(test)]
+#[allow(clippy::panic)]
 mod tests {
     use crate::internal::math;
 
