@@ -3,7 +3,7 @@ use crate::errors::LearnerError;
 use crate::states::Stater;
 use std::cell::RefCell;
 
-pub(crate) struct MockStater<'a, A> {
+pub struct MockStater<'a, A> {
     pub(crate) return_id: &'a str,
     pub(crate) return_possible_actions: Vec<&'a A>,
     pub(crate) return_action_is_compatible: &'a dyn Fn(&'a A) -> bool,
@@ -59,7 +59,7 @@ where
 }
 
 #[derive(Debug)]
-pub(crate) struct MockActioner<'a> {
+pub struct MockActioner<'a> {
     pub(crate) return_id: &'a str,
 }
 

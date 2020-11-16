@@ -4,7 +4,7 @@ use crate::stats::ActionStatter;
 use std::{collections::HashMap, marker};
 
 #[derive(Clone)]
-pub(crate) struct QMap<'a, S, A, AS>
+pub struct QMap<'a, S, A, AS>
 where
     A: Actioner<'a>,
     S: Stater<'a, A>,

@@ -91,8 +91,8 @@ where
         );
         stats.set_calls(stats.calls() + 1);
         stats.set_q_value_raw(new_value);
-        self.qmap.update_stats(&previous_state, action_taken, stats);
-        self.apply_action_weights(&previous_state);
+        self.qmap.update_stats(previous_state, action_taken, stats);
+        self.apply_action_weights(previous_state);
     }
 
     /// `transition` applies an action to a given state.
@@ -212,14 +212,14 @@ where
         let mut raw_value_sum = 0.0;
         let mut existing_action_count = 0;
         for action in state.possible_actions() {
-            match self.qmap.get_stats(state, &action) {
+            match self.qmap.get_stats(state, action) {
                 Some(s) => {
                     raw_value_sum += s.q_value_raw();
                     existing_action_count += 1;
                 }
                 None => self
                     .qmap
-                    .update_stats(state, &action, Box::new(AS::default())),
+                    .update_stats(state, action, Box::new(AS::default())),
             }
         }
 

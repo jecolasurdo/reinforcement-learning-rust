@@ -2,14 +2,17 @@
 /// based on the supplied paramters.
 /// See [https://en.wikipedia.org/wiki/Bellman_equation](https://en.wikipedia.org/wiki/Bellman_equation)
 #[allow(dead_code)]
-pub(crate) fn bellman(
+pub fn bellman(
     old_value: f64,
     learning_rate: f64,
     reward: f64,
     discount_factor: f64,
     optimal_future_value: f64,
 ) -> f64 {
-    old_value + learning_rate * (reward + discount_factor * optimal_future_value - old_value)
+    learning_rate.mul_add(
+        discount_factor.mul_add(optimal_future_value, reward) - old_value,
+        old_value,
+    )
 }
 
 /// Returns a bayesian weighted average where:
@@ -25,13 +28,13 @@ pub(crate) fn bellman(
 ///   see [https://en.wikipedia.org/wiki/Bayesian_average](https://en.wikipedia.org/wiki/Bayesian_average)
 ///   see [https://fulmicoton.com/posts/bayesian_rating/](https://fulmicoton.com/posts/bayesian_rating/)
 #[allow(dead_code)]
-pub(crate) fn bayesian_average(c: f64, n: f64, m: f64, v: f64) -> f64 {
-    safe_divide(c * m + n * v, c + n)
+pub fn bayesian_average(c: f64, n: f64, m: f64, v: f64) -> f64 {
+    safe_divide(c.mul_add(m, n * v), c + n)
 }
 
 /// Returns 0 if the divisor is 0, avoiding div/0 panics.
 #[allow(dead_code)]
-pub(crate) fn safe_divide(dividend: f64, divisor: f64) -> f64 {
+pub fn safe_divide(dividend: f64, divisor: f64) -> f64 {
     if divisor == 0.0 {
         return 0.0;
     }

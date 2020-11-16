@@ -1,13 +1,10 @@
-#![warn(
-    clippy::all,
-    clippy::pedantic,
-    // clippy::nursery,
-)]
+#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
 #![allow(
     clippy::must_use_candidate,
     clippy::float_cmp,
     clippy::similar_names,
-    clippy::missing_errors_doc
+    clippy::missing_errors_doc,
+    clippy::missing_const_for_fn
 )]
 
 pub mod actions;
