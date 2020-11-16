@@ -34,6 +34,11 @@ where
     S: Stater<'a, A>,
     AS: ActionStatter,
 {
+    /// `tie_breaker` is a function that is used to break ties when multiple
+    /// possible actions for a state have the same score. The default value
+    /// for this field is a function that chooses the action at random.
+    /// However, a different tie breaking function can be supplied here if
+    /// desired.
     pub tie_breaker: Box<dyn Fn(usize) -> usize + 'a>,
     qmap: Box<QMap<'a, S, A, AS>>,
     learning_rate: f64,
@@ -44,10 +49,22 @@ where
 }
 
 #[derive(Debug, PartialEq)]
+/// `AgentContext` is used to import and export a learning agent's internal
+/// state. This can be used to persist the status of the agent, or otherwise
+/// evaluate the agent's internal state without exposing the agent's internals.
 pub struct AgentContext<'a, AS: ActionStatter> {
+    /// The amount of weight given to new information.
     pub learning_rate: f64,
+
+    /// The amount of weight given to old information.
     pub discount_factor: f64,
+
+    /// The number of observations required of any action before the action's
+    /// raw q-value is trusted more than average q-value for all of a state's
+    /// actions.
     pub priming_threshold: i32,
+
+    /// The learning agents internal record of scores for each state and action.
     pub q_values: HashMap<&'a str, HashMap<&'a str, Box<AS>>>,
 }
 
@@ -200,6 +217,7 @@ where
         }
     }
 
+    /// Returns the `AgentContext` representing the current state of the agent.
     pub fn get_agent_context(&self) -> AgentContext<AS> {
         AgentContext {
             learning_rate: self.learning_rate,

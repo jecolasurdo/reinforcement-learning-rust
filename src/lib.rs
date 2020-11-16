@@ -2,9 +2,6 @@
     missing_docs,
     missing_doc_code_examples,
     broken_intra_doc_links,
-    missing_debug_implementations
-)]
-#![warn(
     clippy::all,
     clippy::pedantic,
     clippy::nursery,
