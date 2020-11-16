@@ -1,3 +1,6 @@
+//! Actions represent steps that can be taken to transition a model from one
+//! state to another.
+
 /// Represents an action that can be applied to the model's current state.
 pub trait Actioner<'a> {
     /// Returns a string representation of the given action.

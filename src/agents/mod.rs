@@ -1,3 +1,11 @@
+//! Agents facilitate the learning process for a model.
+//!
+//! Specifically, they provide methods for the following:
+//! - Recommending an action given a state.
+//! - Transitioning from one state to another state given some action.
+//! - Learning from the level of success achieved when moving from one
+//! state to another via some action.
+
 pub mod bayesian;
 
 use crate::actions::Actioner;

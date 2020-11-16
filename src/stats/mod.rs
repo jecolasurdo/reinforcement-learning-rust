@@ -1,3 +1,5 @@
+//! Statistics that aid in the learning process.
+
 pub mod actionstats;
 
 /// Represents the stats that can be associated with an action.

@@ -1,3 +1,5 @@
+//! Error types associated with the reinforcement learning process.
+
 #[derive(Debug, Clone, PartialEq)]
 /// A general error that has occurred during a learning operation.
 pub struct LearnerError {

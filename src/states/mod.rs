@@ -1,7 +1,9 @@
+//! States represent the disposition of a model at some point.
+
 use crate::actions::Actioner;
 use crate::errors::LearnerError;
 
-/// Represents the current state of the model.
+/// Represents the current disposition of the model.
 pub trait Stater<'a, A>
 where
     A: Actioner<'a>,

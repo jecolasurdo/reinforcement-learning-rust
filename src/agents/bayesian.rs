@@ -1,3 +1,23 @@
+//! Contains an agent that weights the initial condition of each potential
+//! action based on the number of observations of that action relative to the
+//! number of observations for all other actions.
+//!
+//! The agent is so named because of the way it handles initial
+//! conditions of the q-values associated with each of a state's actions.
+//! When the agent is asked to recommend an action for some state, the agent
+//! does so by choosing the action that has previously recorded a greater
+//! cumulative reward than other possible actions.
+//!
+//! This poses a dilema for initial conditions when no reward has been
+//! previously recorded for one or more of the potential actions. To overcome
+//! this, the Agent applies a Bayesian Average function to each
+//! potential action. In essense, when an action has been called few (or zero)
+//! times, it is assumed that the reward for calling that action might be
+//! similar to that of calling any other action. Thus the agent weights its
+//! potential reward closer to the mean of all other actions. However, as an
+//! action is called more times, the agent begins to evaluate the action on its
+//! observed cumulative reward moreso than the mean of all other actions.
+
 use crate::actions::Actioner;
 use crate::agents::Agenter;
 use crate::internal::datastructures::QMap;
@@ -8,26 +28,7 @@ use rand::Rng;
 use std::collections::HashMap;
 use std::marker;
 
-/// Agent provides facilities for 1) maintaining the learning state of
-/// an environment, 2) making recommendations for actions based on the previous,
-/// current, and predicted states of the system, and 3) executing actions that
-/// have been recommended by the agent.
-///
-/// The Agent is so named because of the way it handles initial
-/// conditions of the q-values associated with each of a state's actions.
-/// When the agent is asked to recommend an action for some state, the agent
-/// does so by choosing the action that has previously recorded a greater
-/// cumulative reward than other possible actions.
-///
-/// This poses a dilema for initial conditions when no reward has been
-/// previously recorded for one or more of the potential actions. To overcome
-/// this, the Agent applies a Bayesian Average function to each
-/// potential action. In essense, when an action has been called few (or zero)
-/// times, it is assumed that the reward for calling that action might be
-/// similar to that of calling any other action. Thus the agent weights its
-/// potential reward closer to the mean of all other actions. However, as an
-/// action is called more times, the agent begins to evaluate the action on its
-/// observed cumulative reward moreso than the mean of all other actions.
+/// A bayesian agent.
 pub struct Agent<'a, S, A, AS>
 where
     A: Actioner<'a>,
@@ -79,7 +80,7 @@ where
     /// state. The reward value represents the positive, negative, or neutral
     /// impact that the transition has had on the environment. `previous_state`
     /// may be None if no action has been previously taken or there is no
-    /// previous state (aka the system is being bootstrapped). In that case,
+    /// previous state (aka the model is being bootstrapped). In that case,
     /// learn becomes a no-op.
     /// See [https://en.wikipedia.org/wiki/Q-learning#Algorithm](https://en.wikipedia.org/wiki/Q-learning#Algorithm)
     fn learn(
@@ -125,7 +126,7 @@ where
     }
 
     /// `recommend_action` recommends an action for a given state based on
-    /// behavior of the system that the agent has learned thus far.
+    /// behavior of the model that the agent has learned thus far.
     /// If the q-value for two or more actions are the same, the action is
     /// chosen according to a tie-breaking function. See Agent docs for
     /// more information.

@@ -1,3 +1,5 @@
+//! A minimal reinforcement-learning framework.
+
 #![warn(
     missing_docs,
     missing_doc_code_examples,

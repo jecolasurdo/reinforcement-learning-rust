@@ -1,3 +1,5 @@
+//! Statistics about the relationship between an action and a state.
+
 use crate::stats::ActionStatter;
 
 /// Contains statistics about an action that has been applied to some state.
